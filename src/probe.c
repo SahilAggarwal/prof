@@ -48,6 +48,7 @@ static int probe_initiate(pid_t pid)
 
 	struct perf_probe_thread 	p_thread;
 
+
 	struct event_list_node *e_list = event_list__init(-1,1);
 	if(e_list == NULL) {
 		fprintf(stderr,"Failed to init event list\n");

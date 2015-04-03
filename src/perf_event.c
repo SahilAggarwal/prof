@@ -34,7 +34,7 @@ perf_event__open(struct event_list_node *event)
 		fprintf(stderr,"Failed to open event FD\n");
 		return NULL;
 	}
-	printf("FD: %d",fd);
+	printf("FD: %d\n",fd);
 	struct mmap_pages *mmap_pages = NULL;
 	mmap_pages = mmap_pages__new(fd,1);
 	if(mmap_pages != NULL) {
