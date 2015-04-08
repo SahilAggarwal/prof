@@ -8,6 +8,12 @@
 
 #define NR_EVENTS ARR_SIZE(events)
 
+struct wakeup {
+	int 	ctrlc;
+	int	rd_fd;
+	int	wr_fd;
+};
+
 void usage();
 
 int valid_opts(int,int,int);

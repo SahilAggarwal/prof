@@ -28,7 +28,7 @@ struct mmap_pages *mmap_pages__new(int fd,int n)
 
 	mmap_pages->base 	= mmap(mmap_pages->wrap_base + page_size,     \
 					mmap_len - page_size, PROT_READ |     \
-					PROT_WRITE, MAP_SHARED | MAP_FIXED,   \
+					PROT_WRITE, MAP_FIXED | MAP_SHARED ,  \
 					fd, 0);
 
 	return mmap_pages->base == MAP_FAILED ? NULL : mmap_pages;
@@ -49,10 +49,11 @@ mmap_pages__write_tail(struct perf_event_mmap_page *meta, __u64 tail)
 	meta->data_tail = tail;
 }
 
-int mmap_pages_read(struct mmap_pages *mp,struct buf_reader *reader)
+int mmap_pages_read(struct mmap_pages *mp,void *buf_reader)
 {
 	__u64 head = mmap_pages__read_head(mp->base);
 	unsigned char *data = (unsigned char *)mp->base + page_size;
+	struct buf_reader *reader = (struct buf_reader *)buf_reader;
 	int size = 0;
 	int nread = 0;
 	int ret;

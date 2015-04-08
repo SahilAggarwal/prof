@@ -7,6 +7,6 @@
 
 static long perf_event_open(struct perf_event_attr *,pid_t,int,int,unsigned long);
 
-struct mmap_pages *perf_event__open(struct event_list_node *);
+struct mmap_pages *perf_event__open(struct event_open *);
 
 #endif

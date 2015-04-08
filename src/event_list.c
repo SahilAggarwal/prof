@@ -2,24 +2,30 @@
 #include <stdlib.h>
 
 #include "event_list.h"
+#include "event.h"
 #include "shared.h"
 #include "mmap_page.h"
 #include "perf_event.h"
-
-#define SYS_ENTER_OPEN  1<<1
-#define SCHED_SWITCH    1<<0
+#include "probe_buff.h"
 
 char *events[] = {
-                        "syscalls/sys_enter_open/",
+			"syscalls/sys_enter_open/",
 			"sched/sched_switch/"
                  };
+
+int nr_events = ARR_SIZE(events);
 
 struct event_list_node *event_list__init(pid_t pid,int cpu)
 {
 	struct event_list_node 	*e_list;
+	int 			i;
+	FILE			*out_fp;
 	
-	int i;
-	int nr_events 	= ARR_SIZE(events);
+	struct probe_buff *probe_buff = probe_buff__init();
+        if(probe_buff == NULL) {
+                fprintf(stderr,"Failed to init probe buffer\n");
+                return NULL;
+        }
 
 	e_list = malloc(nr_events*sizeof(struct event_list_node));
 
@@ -30,13 +36,14 @@ struct event_list_node *event_list__init(pid_t pid,int cpu)
 			fprintf(stderr,"Failed to get %s event id\n",events[i]);
 			return NULL;
 		}
-
-		e_list[i].type  	= 1<<i;
-		e_list[i].id    	= id;
-		e_list[i].cpu  		= cpu;
-		e_list[i].group_id	= -1;
-		e_list[i].flags		= 0;
-		e_list[i].pid  		= pid;
+		
+		e_list[i].probe_buff		= probe_buff;
+		e_list[i].type 		 	= 1<<i;
+		e_list[i].e_open.id    		= id;
+		e_list[i].e_open.cpu  		= cpu;
+		e_list[i].e_open.group_id	= -1;
+		e_list[i].e_open.flags		= 0;
+		e_list[i].e_open.pid  		= pid;
 	}
 	return e_list;
 }
@@ -46,9 +53,15 @@ int event_list__open_events(struct event_list_node *e_list)
 	int nr_events   = ARR_SIZE(events);
 	int i;
 	for(i=0; i<nr_events; i++) {
-		e_list[i].mmap_pages = perf_event__open(&e_list[i]);
+		e_list[i].mmap_pages = perf_event__open(&e_list[i].e_open);
+
 		if(e_list[i].mmap_pages == NULL) {
 			fprintf(stderr,"Failed to set mmap_pages\n");
+			return -1;
+		}
+
+		if(event_create_thread(&e_list[i])) {
+			fprintf(stderr,"Failed to create thread\n");
 			return -1;
 		}
 	}
