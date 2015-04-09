@@ -3,7 +3,7 @@
 
 #include <linux/perf_event.h>
 #include <sys/types.h>
-#include "event_list.h"
+#include "event_map.h"
 
 static long perf_event_open(struct perf_event_attr *,pid_t,int,int,unsigned long);
 

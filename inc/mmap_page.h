@@ -6,7 +6,7 @@
 struct mmap_pages {
 	int 			n;
 	int 			fd;
-	struct perf_event_attr  attr;
+	struct perf_event_attr  *attr;
 	__u64			mask;
 	void 			*base;
 	void 			*wrap_base;

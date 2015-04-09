@@ -3,6 +3,7 @@
 #include <sys/syscall.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
+
 #include "perf_event.h"
 #include "mmap_page.h"
 
@@ -17,24 +18,26 @@ struct mmap_pages *
 perf_event__open(struct event_open *e_open)
 {
 	int fd = -1;
+	e_open->attr = malloc(sizeof(struct perf_event_attr));
 
-	e_open->attr.disabled 		= 1;
-	e_open->attr.size 		= sizeof(e_open->attr);
-	e_open->attr.type 		= PERF_TYPE_TRACEPOINT;
-	e_open->attr.config		= e_open->id;
-	e_open->attr.sample_period	= 1;
-//	e_open->attr.inherit		= 1;
-	e_open->attr.sample_type 	= PERF_SAMPLE_TIME 	|
+	e_open->attr->disabled 		= 1;
+	e_open->attr->size 		= sizeof(*e_open->attr);
+	e_open->attr->type 		= PERF_TYPE_TRACEPOINT;
+	e_open->attr->config		= e_open->id;
+	e_open->attr->sample_period	= 1;
+//	e_open->attr->inherit		= 1;
+	e_open->attr->sample_type 	= PERF_SAMPLE_TIME 	|
 					  PERF_SAMPLE_RAW  	|
 					  PERF_SAMPLE_TID  	;
 
-	fd = perf_event_open(&e_open->attr,e_open->pid,e_open->cpu	\
+	fd = perf_event_open(e_open->attr,e_open->pid,e_open->cpu	\
 				,e_open->group_id,e_open->flags);
 
 	if(fd < 0) {
 		fprintf(stderr,"Failed to open event FD\n");
 		return NULL;
 	}
+
 	struct mmap_pages *mmap_pages = NULL;
 	mmap_pages = mmap_pages__new(fd,1);
 	if(mmap_pages != NULL) {

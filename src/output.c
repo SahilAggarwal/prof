@@ -3,14 +3,14 @@
 #include <string.h>
 
 #include "output.h"
-#include "event_list.h"
+#include "event_map.h"
 #include "probe_buff.h"
 
 __u64 write_output(void *buf, __u64 size, void *out_buff)
 {
 	
 	int nread = 0;
-	struct output_records  *out	   = (struct output_records *)out_buff;
+	struct output  *out	   	   = (struct output *)out_buff;
 	struct perf_event_attr attr 	   = out->attr;
 	struct probe_buff      *probe_buff = out->probe_buff;
 	while(nread < size) {

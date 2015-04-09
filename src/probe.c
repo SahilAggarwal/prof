@@ -9,14 +9,14 @@
 
 
 #include "probe.h"
-#include "event_list.h"
-#include "mmap_page.h"
 #include "shared.h"
+#include "event_map.h"
+#include "mmap_page.h"
+#include "probe_buff.h"
 
 __u64 	page_size;
 extern int nr_events; // From src/event_list.c
 extern struct wakeup wakeup; // From src/main.c
-
 
 int probe_start(char *exec,char **args,pid_t pid)
 {
@@ -60,69 +60,87 @@ static int probe_start_exec(char *exec, char **args)
 
 	} else if(pid > 0) {
 		close(ntfy_pipe[0]);
-		struct perf_probe_thread *p_thread = probe_initiate(pid);
-		if(p_thread == NULL) {
+		struct probe *probe = probe_init(pid);
+		if(probe == NULL) {
 			fprintf(stderr,"Failed to initiate probe");
 			return -1;
 		}
+		if(thread_map__start_threads(probe->thread_map)) {
+			fprintf(stderr,"Failed to start threads");
+			return -1;
+		}
+		probe_enable(probe);
 		write(ntfy_pipe[1],"1",1);
 	
 		int i;	
-		for(i=0; i<nr_events; i++) {
-			pthread_join(p_thread->e_list[i].thread,NULL);
-		}
-
-		probe_buff__flush(p_thread->e_list[0].probe_buff);
+		for(i=0; i < probe->thread_map->nr; i++)
+			pthread_join(probe->thread_map->threads[i].tid,NULL);
 	}
 	return 0;
 }
 
 static int probe_start_pid(pid_t pid)
 {
-	struct perf_probe_thread *p_thread = probe_initiate(pid);
-	if(p_thread == NULL) {
+	struct probe *probe = probe_init(pid);
+	if(probe == NULL) {
 		fprintf(stderr,"Failed to initiate probe");
 		return -1;
 	}
+	if(thread_map__start_threads(probe->thread_map)) {
+		fprintf(stderr,"Failed to start threads");
+		return -1;
+	}
 
-	int i;	
-	for(i=0; i<nr_events; i++) {
-                pthread_join(p_thread->e_list[i].thread,NULL);
-        }
+	probe_enable(probe);
+	
+	int i;
+	for(i=0; i < probe->thread_map->nr; i++)
+                pthread_join(probe->thread_map->threads[i].tid,NULL);
 
-        probe_buff__flush(p_thread->e_list[0].probe_buff);
 	return 0;
 }
 
 
-static struct perf_probe_thread  *probe_initiate(pid_t pid)
+static struct probe *probe_init(pid_t pid)
 {
 	page_size = sysconf(_SC_PAGE_SIZE);
 
-	struct perf_probe_thread *p_thread = malloc(sizeof(*p_thread));
+	struct probe *probe = malloc(sizeof(*probe));
 
-	struct event_list_node *e_list = event_list__init(pid,-1);
-	if(e_list == NULL) {
-		fprintf(stderr,"Failed to init event list\n");
+	probe->cpu_map = cpu_map__read_all();
+	if(probe->cpu_map == NULL) {
+                fprintf(stderr,"Failed to map CPUs");
+                return NULL;
+        }
+
+	probe->buff = probe_buff__init();
+	if(probe->buff == NULL) {
+		fprintf(stderr,"Failed to init probe buff\n");
 		return NULL;
 	}
-	p_thread->e_list = e_list;
 
-	if(event_list__open_events(p_thread->e_list)) {
-		fprintf(stderr,"Failed to open events\n");
+
+	probe->thread_map = thread_map__init(probe->cpu_map,probe->buff,pid);
+	if(probe->thread_map == NULL) {
+		fprintf(stderr,"Faield to map threads\n");
 		return NULL;
 	}
 
+	return probe;
+}
+
+void probe_enable(struct probe *probe)
+{
 	int i;
-        for(i=0; i<nr_events; i++) {
-                if(syscall(__NR_ioctl, p_thread->e_list[i].mmap_pages->fd, \
-                           PERF_EVENT_IOC_ENABLE, 0)) {
+	for(i=0; i < probe->thread_map->nr; i++)
+        {
+		int j = 0;
+		struct event_map *event_map = probe->thread_map->threads[i].event_map;
+		for(; j < event_map->nr; j++)
+                if(syscall(__NR_ioctl, event_map->events[j].mmap_pages->fd, PERF_EVENT_IOC_ENABLE, 0)) {
                         fprintf(stderr,"Failed to enable sampling\n");
                         continue;
                 }
         }
-
-	printf("Probe initiated.\n");
-	return p_thread;
+	printf("Probe Enabled\n");
 }
-
