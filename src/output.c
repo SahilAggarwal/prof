@@ -11,7 +11,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 	
 	int nread = 0;
 	struct output  *out	   	   = (struct output *)out_buff;
-	struct perf_event_attr attr 	   = out->attr;
+	struct perf_event_attr *attr 	   = out->attr;
 	struct probe_buff      *probe_buff = out->probe_buff;
 	while(nread < size) {
 
@@ -25,7 +25,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 		switch(header->type) {
 
 			case PERF_RECORD_SAMPLE:
-				if(attr.sample_type & PERF_SAMPLE_TID) {
+				if(attr->sample_type & PERF_SAMPLE_TID) {
                                         struct perf_record_sample_tid *tid = sample;
                                         sprintf(str,"TID: %d, PID: %d",    		\
                                                            tid->tid,   			\
@@ -33,19 +33,19 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					sample += sizeof(*tid);
                                 }
 
-                                if(attr.sample_type & PERF_SAMPLE_TIME) {
+                                if(attr->sample_type & PERF_SAMPLE_TIME) {
                                         struct perf_record_sample_time *time = sample;
                                         sprintf(str + strlen(str)," TIME: %ld",time->time);
 					sample += sizeof(*time);
                                 }
 
-				if(attr.sample_type & PERF_SAMPLE_STREAM_ID) {
+				if(attr->sample_type & PERF_SAMPLE_STREAM_ID) {
 					struct perf_record_sample_stream_id *id = sample;
 					sprintf(str +strlen(str),"ID: %d",id->stream_id);
 					sample += sizeof(*id);
 				}
 			
-				if(attr.sample_type & PERF_SAMPLE_RAW) {
+				if(attr->sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
 					if(out->e_type & SCHED_SWITCH) {
 						struct sched_switch *swtch = (struct sched_switch *)raw->data;

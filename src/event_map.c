@@ -12,8 +12,6 @@ char *events[] = {
 			"sched/sched_switch/"
                  };
 
-extern GHashTable *fd_to_type;
-
 int nr_events = ARR_SIZE(events);
 
 struct event_list_map *event_list_map__init() 
@@ -76,32 +74,7 @@ struct event_map *event_map__init(struct event_list_map *elist_map,int cpu,pid_t
                 }
 		i++;
 	}
-
-/*
-	if(event_map__open_events(event_map)) {
-		fprintf(stderr,"Failed to open events\n");
-		return NULL;
-	}
-*/
-	
 	return event_map;
-}
-
-int event_map__open_events(struct event_map *event_map)
-{
-	int i;
-	for(i=0; i < event_map->nr; i++) {
-		event_map->events[i].mmap_pages = perf_event__open(
-						  &event_map->events[i].e_open
-								  );
-		if(event_map->events[i].mmap_pages == NULL) {
-			fprintf(stderr,"Failed to set mmap_pages\n");
-			return -1;
-		}
-		//g_hash_table_insert(fd_to_type,                            \
-                                    &event_map->events[i].mmap_pages->fd,&i);
-	}
-	return 0;
 }
 
 int event__get_id(char *event)

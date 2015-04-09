@@ -25,7 +25,7 @@ perf_event__open(struct event_open *e_open)
 	e_open->attr->type 		= PERF_TYPE_TRACEPOINT;
 	e_open->attr->config		= e_open->id;
 	e_open->attr->sample_period	= 1;
-//	e_open->attr->inherit		= 1;
+	e_open->attr->inherit		= 1;
 	e_open->attr->sample_type 	= PERF_SAMPLE_TIME 	|
 					  PERF_SAMPLE_RAW  	|
 					  PERF_SAMPLE_TID  	;

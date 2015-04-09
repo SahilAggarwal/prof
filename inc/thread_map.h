@@ -26,6 +26,8 @@ int thread_map__start_threads(struct thread_map *);
 
 void *thread_loop(void *arg);
 
+int *int_dup(int);
+
 int thread_start(struct thread *);
 
 #endif

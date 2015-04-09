@@ -8,7 +8,6 @@
 #include "mmap_page.h"
 #include "shared.h"
 
-GHashTable *fd_to_type;
 extern struct wakeup wakeup;
 
 struct thread_map *
@@ -18,8 +17,6 @@ thread_map__init(struct cpu_map *cpu_map,struct probe_buff *buff,pid_t pid)
 					sizeof(struct thread)*cpu_map->nr);
 	
 	struct event_list_map *elist_map = event_list_map__init();
-
-	fd_to_type = g_hash_table_new(g_int_hash,g_int_equal);
 	thread_map->nr = cpu_map->nr;
 
 	int i;
@@ -85,7 +82,7 @@ void *thread_loop(void *arg)
 
 	struct output out = {
 				{write_output},
-				event_map->events[0].e_open.attr,
+				NULL,
 				thread->buff
 			     };
 
@@ -97,10 +94,12 @@ void *thread_loop(void *arg)
 		int i=0;
 		for(;i < event_map->nr; i++) {
 			if(pollfd[i].revents & POLLIN) {
-				int *index = g_hash_table_lookup(fd_to_type, &pollfd[i].fd);
-				out.e_type = event_map->events[*index].type;
-				mmap_pages_read(event_map->events[*index].mmap_pages,
-						&out.reader);
+				if(pollfd[i].fd == event_map->events[i].mmap_pages->fd) {
+					out.e_type = event_map->events[i].type;
+					out.attr   = event_map->events[i].e_open.attr;
+					mmap_pages_read(event_map->events[i].mmap_pages,
+							&out.reader);
+				}
 			}
 		}
         }
