@@ -75,6 +75,8 @@ static int probe_start_exec(char *exec, char **args)
 		int i;	
 		for(i=0; i < probe->thread_map->nr; i++)
 			pthread_join(probe->thread_map->threads[i].tid,NULL);
+	
+		probe_buff__flush(probe->buff);
 	}
 	return 0;
 }
@@ -96,10 +98,11 @@ static int probe_start_pid(pid_t pid)
 	int i;
 	for(i=0; i < probe->thread_map->nr; i++)
                 pthread_join(probe->thread_map->threads[i].tid,NULL);
+	
+	probe_buff__flush(probe->buff);
 
 	return 0;
 }
-
 
 static struct probe *probe_init(pid_t pid)
 {
@@ -118,7 +121,6 @@ static struct probe *probe_init(pid_t pid)
 		fprintf(stderr,"Failed to init probe buff\n");
 		return NULL;
 	}
-
 
 	probe->thread_map = thread_map__init(probe->cpu_map,probe->buff,pid);
 	if(probe->thread_map == NULL) {

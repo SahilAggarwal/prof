@@ -12,6 +12,7 @@ int main()
 		pid = fork();
 		if(pid == 0) {
 			char filename[10];
+			sleep(1);
 			snprintf(filename,sizeof(filename),"%d.text",index);
 			FILE *fp = fopen(filename,"w");
 			if( fp == NULL ) {
@@ -23,6 +24,8 @@ int main()
 			fflush(fp);
 			fsync(fileno(fp));
 			fclose(fp);
+
+			sleep(1);
 		
 			fp = fopen(filename,"r");
 			if( fp == NULL ) {
@@ -38,10 +41,10 @@ int main()
 			exit(0);
 		}
 		index++;
-//		sleep(3);
+//		sleep(2);
 //		if(index == 4)
 //			goto out;
 //	}
-//	out:
+	out:
 	while(waitpid(-1,&status,0) != -1);
 }

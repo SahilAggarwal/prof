@@ -28,6 +28,7 @@ perf_event__open(struct event_open *e_open)
 	e_open->attr->inherit		= 1;
 	e_open->attr->sample_type 	= PERF_SAMPLE_TIME 	|
 					  PERF_SAMPLE_RAW  	|
+					  PERF_SAMPLE_CPU	|
 					  PERF_SAMPLE_TID  	;
 
 	fd = perf_event_open(e_open->attr,e_open->pid,e_open->cpu	\

@@ -30,4 +30,6 @@ int *int_dup(int);
 
 int thread_start(struct thread *);
 
+void thread_get_counters(struct event_map *);
+
 #endif

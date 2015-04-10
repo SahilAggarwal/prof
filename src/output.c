@@ -6,6 +6,9 @@
 #include "event_map.h"
 #include "probe_buff.h"
 
+#define GET_PROBE_DATA(type)  \
+	struct type *data = (struct type *) raw->data;
+
 __u64 write_output(void *buf, __u64 size, void *out_buff)
 {
 	
@@ -48,20 +51,51 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 				if(attr->sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
 					if(out->e_type & SCHED_SWITCH) {
-						struct sched_switch *swtch = (struct sched_switch *)raw->data;
+						GET_PROBE_DATA(sched_switch);
 						sprintf(str + strlen(str), 	
 						" PrevPID: %d PrevComm: %s NextComm: %s NextPID:%d\n",
-											swtch->prev_pid,
-											swtch->prev_comm,
-											swtch->next_comm,
-											swtch->next_pid);
+											data->prev_pid,
+											data->prev_comm,
+											data->next_comm,
+											data->next_pid);
 
 					}
+					if(out->e_type & SCHED_WAKEUP) {
+						GET_PROBE_DATA(sched_wakeup);
+						
+						sprintf(str + strlen(str)," Target CPU: %d\n",data->target_cpu);
+					}
 					if(out->e_type & SYS_ENTER_OPEN) {
-						struct sys_enter_open *open = (struct sys_enter_open *)raw->data;
-						sprintf(str + strlen(str)," SyscallNo: %lx Mode: %d\n",open->nr,  \
-										 	 open->mode);
+						GET_PROBE_DATA(sys_enter_open);
+						sprintf(str + strlen(str)," SyscallNo: %lx Mode: %d\n",data->nr,  \
+										 	 data->mode);
 					}			
+					if(out->e_type & SYS_ENTER_READ) {
+					//	GET_PROBE_DATA(sys_enter_read)
+						struct sys_enter_read *read = (struct sys_enter_read *)raw->data;
+					
+						sprintf(str + strlen(str), " FD: %d RCount: %d\n",read->fd,
+											    	  read->count);
+					}
+					if(out->e_type & SYS_EXIT_READ) {
+						GET_PROBE_DATA(sys_exit_read);
+						
+						sprintf(str + strlen(str)," Read: %d\n",data->ret);
+					}
+					if(out->e_type & SYS_ENTER_WRITE) {
+						GET_PROBE_DATA(sys_enter_write);
+
+						sprintf(str + strlen(str), " FD: %d WCount: %d\n",data->fd,
+												  data->count); 
+					}
+					if(out->e_type & SYS_ENTER_LSEEK) {
+						GET_PROBE_DATA(sys_enter_lseek);
+	
+						sprintf(str + strlen(str), " FD: %d Off: %d Orig: %d\n",
+												data->fd,
+												data->offset,
+												data->origin); 
+					}
 					sample += sizeof(*raw);
 				}
 				probe_buff->write(probe_buff,str,strlen(str));

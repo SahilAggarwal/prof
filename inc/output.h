@@ -13,31 +13,90 @@ struct output {
 	int			e_type;
 };
 
-struct sched_switch {
-	unsigned short 	common_type;
-	unsigned char 	common_flags;
-	unsigned char  	common_preempt_count;
-	int 		common_pid;
-	int		common_padding;
-	char	 	prev_comm[16];
-	pid_t		prev_pid;
-	int 		prev_prio;
-	long		prev_state;
-	char		next_comm[16];
-	pid_t		next_pid;
-	int		next_prio;
-};
-
-struct sys_enter_open {
-	unsigned short  common_type;
+struct trace_common {
+        unsigned short  common_type;
         unsigned char   common_flags;
         unsigned char   common_preempt_count;
         int             common_pid;
         int             common_padding;
-	int		nr;
-	char		filename[8];
-	long long	flags;
-	long long	mode;
+};
+
+struct sched_switch {
+	struct trace_common 	common;
+	char	 		prev_comm[16];
+	pid_t			prev_pid;
+	int 			prev_prio;
+	long			prev_state;
+	char			next_comm[16];
+	pid_t			next_pid;
+	int			next_prio;
+};
+
+struct sched_wakeup {
+	struct trace_common	common;
+	char 			comm[16];
+	pid_t			pid;
+	int			prio;
+	int			success;
+	int			target_cpu;
+};
+
+struct sys_enter_open {
+	struct trace_common 	common;
+	int			nr;
+	char			filename[8];
+	long long		flags;
+	long long		mode;
+};
+
+struct sys_enter {
+	struct trace_common	common;
+	long long		id;
+	long long   		args[6];
+};
+
+struct sys_enter_read {
+	struct trace_common	common;
+	int			nr;
+	long long		fd;
+	char			buf[8];
+	long long		count;
+};
+
+struct sys_exit_read {
+	struct trace_common	common;
+	int			nr;
+	long long		ret;
+};
+
+struct sys_enter_write {
+	struct trace_common	common;
+	int 			nr;	
+	long long		fd;	
+	char			buf[8];
+	long long		count;
+};
+
+struct sys_enter_lseek {
+	struct trace_common	common;
+	int			nr;
+	long long		fd;
+	long long		offset;
+	long long 		origin;
+};
+
+struct getnameprobe {
+	struct trace_common	common;
+	long long		probe_func;
+	long long		probe_ret_ip;
+	char			filename[4];	
+};
+
+struct read_format {
+        __u64 nr_events;
+        __u64 time_enabled;
+        __u64 time_running;
+        __u64 id;
 };
 
 struct perf_record_sample_tid {
@@ -47,6 +106,10 @@ struct perf_record_sample_tid {
 
 struct perf_record_sample_stream_id {
 	__u64 stream_id;
+};
+
+struct perf_record_sample_cpu {
+	__u32 cpu, res;
 };
 
 struct perf_record_sample_time {

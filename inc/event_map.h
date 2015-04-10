@@ -5,8 +5,14 @@
 #include <linux/perf_event.h>
 #include "list.h"
 
-#define SYS_ENTER_OPEN  1<<0
+#define SCHED_WAKEUP    1<<0
 #define SCHED_SWITCH    1<<1
+#define SYS_ENTER_OPEN  1<<2
+#define SYS_ENTER_READ  1<<3
+#define SYS_EXIT_READ	1<<4
+#define SYS_ENTER_WRITE	1<<5
+#define SYS_ENTER_LSEEK 1<<6
+
 
 struct event_open {
         __u64                   id;
@@ -26,7 +32,7 @@ struct event {
 
 struct event_map {
 	int 		nr;
-	struct event 	*events;
+	struct event 	events[];
 };
 
 struct event_list {

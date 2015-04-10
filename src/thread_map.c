@@ -70,8 +70,6 @@ void *thread_loop(void *arg)
 	struct event_map *event_map = thread->event_map;
 	struct pollfd    *pollfd    = malloc(sizeof(*pollfd) * (event_map->nr + 1));
 
-	
-
 	int i;
 	for(i=0; i<event_map->nr; i++) {
 		pollfd[i].fd     = event_map->events[i].mmap_pages->fd;
@@ -93,16 +91,54 @@ void *thread_loop(void *arg)
                 }
 		int i=0;
 		for(;i < event_map->nr; i++) {
-			if(pollfd[i].revents & POLLIN) {
+			//if(pollfd[i].revents & POLLIN) {
 				if(pollfd[i].fd == event_map->events[i].mmap_pages->fd) {
 					out.e_type = event_map->events[i].type;
 					out.attr   = event_map->events[i].e_open.attr;
 					mmap_pages_read(event_map->events[i].mmap_pages,
 							&out.reader);
 				}
-			}
+				else {
+                                	printf("Samething wrong, contact my developer\n");
+                        	}
+			//}
 		}
         }
-	
+	thread_get_counters(event_map);
 }
 
+void thread_get_counters(struct event_map *event_map)
+{
+	struct read_format counters;
+	int i=0;
+	for(; i < event_map->nr; i++) {
+		int cpu = event_map->events[i].e_open.cpu;
+		int fd  = event_map->events[i].mmap_pages->fd;
+		read(fd,&counters,sizeof(counters));
+
+		switch(event_map->events[i].type) {
+		
+		case SCHED_SWITCH	: printf("CPU : %3d | Context Switches : %d\n",
+				   	  cpu,counters.nr_events);
+					  break;
+
+		case SYS_ENTER_OPEN	: printf("CPU : %3d | Files opened     : %d\n",
+				     	  cpu,counters.nr_events);
+					  break;
+
+		case SYS_ENTER_WRITE	: printf("CPU : %3d | Files writen     : %d\n",
+					  cpu,counters.nr_events);
+					  break;
+		case SYS_ENTER_LSEEK	: printf("CPU : %3d | Lseeks           : %d\n",
+					  cpu,counters.nr_events);
+					  break;
+
+		case SYS_ENTER_READ	: printf("CPU : %3d | Files Read       : %d\n",
+					  cpu,counters.nr_events);
+					  break;
+		case SYS_EXIT_READ	: printf("CPU : %3d | Exit Reads       : %d\n",
+					  cpu,counters.nr_events);
+		}
+					   
+	}
+}

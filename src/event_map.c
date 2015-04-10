@@ -8,8 +8,13 @@
 #include "shared.h"
 
 char *events[] = {
+			"sched/sched_wakeup/",
+			"sched/sched_switch/",
 			"syscalls/sys_enter_open/",
-			"sched/sched_switch/"
+			"syscalls/sys_enter_read/",
+			"syscalls/sys_exit_read/",
+			"syscalls/sys_enter_write/",
+			"syscalls/sys_enter_lseek/",
                  };
 
 int nr_events = ARR_SIZE(events);
@@ -48,11 +53,11 @@ struct event_map *event_map__init(struct event_list_map *elist_map,int cpu,pid_t
 	int nr_events = elist_map->nr;
 	struct list_head  *pos;
 	struct event_list *tmp;
-	struct event_map *event_map = malloc(sizeof(*event_map));
+	struct event_map *event_map = malloc(sizeof(*event_map) +  \
+				      sizeof(struct event) * nr_events);
 	
-	event_map->events = malloc(sizeof(struct event) * nr_events);
 	event_map->nr     = nr_events;
-
+	
 	int  i=0;
 	list_for_each(pos, &(elist_map->elist->list)) {
 
