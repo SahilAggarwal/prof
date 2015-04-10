@@ -47,6 +47,11 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					sprintf(str +strlen(str),"ID: %d",id->stream_id);
 					sample += sizeof(*id);
 				}
+				if(attr->sample_type & PERF_SAMPLE_CPU) {
+					struct perf_record_sample_cpu *cpu = sample;
+					sprintf(str + strlen(str)," CPU: %d",cpu->cpu);
+					sample += sizeof(*cpu);
+				}
 			
 				if(attr->sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
