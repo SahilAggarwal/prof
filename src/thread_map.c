@@ -80,8 +80,6 @@ void *thread_loop(void *arg)
 
 	struct output out = {
 				{write_output},
-				NULL,
-				thread->buff
 			     };
 
 	while(!__sync_fetch_and_or(&wakeup.ctrlc,0)) {
@@ -95,6 +93,7 @@ void *thread_loop(void *arg)
 				if(pollfd[i].fd == event_map->events[i].mmap_pages->fd) {
 					out.e_type = event_map->events[i].type;
 					out.attr   = event_map->events[i].e_open.attr;
+					out.probe_buff   = thread->buff;
 					mmap_pages_read(event_map->events[i].mmap_pages,
 							&out.reader);
 				}
@@ -104,7 +103,9 @@ void *thread_loop(void *arg)
 			//}
 		}
         }
+	sem_wait(&thread->buff->sem);
 	thread_get_counters(event_map);
+	sem_post(&thread->buff->sem);
 }
 
 void thread_get_counters(struct event_map *event_map)
@@ -138,7 +139,18 @@ void thread_get_counters(struct event_map *event_map)
 					  break;
 		case SYS_EXIT_READ	: printf("CPU : %3d | Exit Reads       : %d\n",
 					  cpu,counters.nr_events);
+					  break;
+		case SYS_CLONE		: printf("CPU : %3d | Clone            : %d\n",
+					  cpu,counters.nr_events);
+					  break;
+		
+		case SYS_ENTER		: printf("CPU : %3d | Syscalls         : %d\n",
+					  cpu,counters.nr_events);
+					  break;
+		
+		case SYS_ENTER_MMAP	: printf("CPU : %3d | Mmap             : %d\n",
+					  cpu,counters.nr_events);
+					  break;
 		}
-					   
 	}
 }

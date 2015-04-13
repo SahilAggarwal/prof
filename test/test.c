@@ -12,8 +12,8 @@ int main()
 		pid = fork();
 		if(pid == 0) {
 			char filename[10];
-			sleep(1);
 			snprintf(filename,sizeof(filename),"%d.text",index);
+//			sleep(2);
 			FILE *fp = fopen(filename,"w");
 			if( fp == NULL ) {
 				fprintf(stderr,"Unable to open file");
@@ -24,9 +24,8 @@ int main()
 			fflush(fp);
 			fsync(fileno(fp));
 			fclose(fp);
-
-			sleep(1);
 		
+//			sleep(2);
 			fp = fopen(filename,"r");
 			if( fp == NULL ) {
                                 fprintf(stderr,"Unable to open file");

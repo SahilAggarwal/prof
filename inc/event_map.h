@@ -5,13 +5,16 @@
 #include <linux/perf_event.h>
 #include "list.h"
 
-#define SCHED_WAKEUP    1<<0
-#define SCHED_SWITCH    1<<1
-#define SYS_ENTER_OPEN  1<<2
-#define SYS_ENTER_READ  1<<3
-#define SYS_EXIT_READ	1<<4
-#define SYS_ENTER_WRITE	1<<5
-#define SYS_ENTER_LSEEK 1<<6
+//#define SCHED_WAKEUP    1<<0
+#define SCHED_SWITCH    1<<0
+#define SYS_CLONE	1<<2
+#define SYS_ENTER       1<<3
+#define SYS_ENTER_OPEN  1<<4
+#define SYS_ENTER_READ  1<<5
+#define SYS_EXIT_READ   1<<6
+#define SYS_ENTER_WRITE	1<<7
+#define SYS_ENTER_LSEEK 1<<8
+#define SYS_ENTER_MMAP  1<<9
 
 
 struct event_open {
@@ -20,7 +23,7 @@ struct event_open {
         int                     group_id;
         unsigned long           flags;
         pid_t                   pid;
-	struct perf_event_attr  *attr;
+	struct perf_event_attr  attr;
 };
 
 struct event {

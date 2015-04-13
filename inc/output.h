@@ -8,7 +8,7 @@
 
 struct output {
 	struct buf_reader 	reader;
-	struct perf_event_attr 	*attr;
+	struct perf_event_attr 	attr;
 	struct probe_buff	*probe_buff;
 	int			e_type;
 };
@@ -39,6 +39,13 @@ struct sched_wakeup {
 	int			prio;
 	int			success;
 	int			target_cpu;
+};
+
+struct sys_clone {
+	struct trace_common	common;
+	long long		ret_ip;
+	long long		func;
+	int			ret;
 };
 
 struct sys_enter_open {
@@ -83,6 +90,17 @@ struct sys_enter_lseek {
 	long long		fd;
 	long long		offset;
 	long long 		origin;
+};
+
+struct sys_enter_mmap {
+	struct trace_common	common;
+	int			nr;
+	long long		addr;
+	long long		len;
+	long long		prot;
+	long long		flags;
+	long long		fd;
+	long long		offset;
 };
 
 struct getnameprobe {

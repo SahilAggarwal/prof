@@ -43,6 +43,7 @@ __u64 write_output(void *buf, __u64 size, struct output_records *out)
 				if(attr.sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
 					int i;
+					printf("Size: %d %d\n",sizeof(struct sched_switch),raw->size);
 					struct sched_switch *swtch = (struct sched_switch *)raw->data;
 					printf("PrevPID: %d PrevComm: %s NextComm: %s NextPID:%d\n",
 										swtch->prev_pid,

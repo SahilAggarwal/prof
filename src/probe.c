@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <asm/unistd.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <sys/stat.h>
@@ -13,6 +15,8 @@
 #include "event_map.h"
 #include "mmap_page.h"
 #include "probe_buff.h"
+
+#define SNAME "notify"
 
 __u64 	page_size;
 extern int nr_events; // From src/event_list.c
@@ -39,27 +43,20 @@ int probe_start(char *exec,char **args,pid_t pid)
 
 static int probe_start_exec(char *exec, char **args)
 {
-	int ntfy_pipe[2];
-	if(pipe2(ntfy_pipe, O_NONBLOCK)) {
-		fprintf(stderr,"Failed to create notify pipe\n");
-		return -1;
-	}
+
+	sem_t *sem = sem_open(SNAME, O_CREAT, 0644, 0);
 	
 	pid_t pid = fork();
 	if(pid == 0) {
 
-		close(ntfy_pipe[1]);
-		char c[1] = {'0'};
-		while(read(ntfy_pipe[0],c,1) != 1);
+		sem_t *sem = sem_open(SNAME, 0);
+		sem_wait(sem);
 
-		if(*c == '1') {
-			if(execv(exec,args) == -1)
-				fprintf(stderr,"Failed to exec\n");
-			exit(0);
-		}
+		if(execv(exec,args) == -1)
+			fprintf(stderr,"Failed to exec\n");
+		exit(0);
 
 	} else if(pid > 0) {
-		close(ntfy_pipe[0]);
 		struct probe *probe = probe_init(pid);
 		if(probe == NULL) {
 			fprintf(stderr,"Failed to initiate probe");
@@ -70,7 +67,7 @@ static int probe_start_exec(char *exec, char **args)
 			return -1;
 		}
 		probe_enable(probe);
-		write(ntfy_pipe[1],"1",1);
+		sem_post(sem);
 	
 		int i;	
 		for(i=0; i < probe->thread_map->nr; i++)

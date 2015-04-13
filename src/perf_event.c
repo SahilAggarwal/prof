@@ -18,20 +18,22 @@ struct mmap_pages *
 perf_event__open(struct event_open *e_open)
 {
 	int fd = -1;
-	e_open->attr = malloc(sizeof(struct perf_event_attr));
+//	e_open->attr = malloc(sizeof(struct perf_event_attr));
 
-	e_open->attr->disabled 		= 1;
-	e_open->attr->size 		= sizeof(*e_open->attr);
-	e_open->attr->type 		= PERF_TYPE_TRACEPOINT;
-	e_open->attr->config		= e_open->id;
-	e_open->attr->sample_period	= 1;
-	e_open->attr->inherit		= 1;
-	e_open->attr->sample_type 	= PERF_SAMPLE_TIME 	|
+	e_open->attr.disabled 		= 1;
+	e_open->attr.size 		= sizeof(e_open->attr);
+	e_open->attr.type 		= PERF_TYPE_TRACEPOINT;
+	e_open->attr.config		= e_open->id;
+	e_open->attr.sample_period	= 1;
+	e_open->attr.inherit		= 1;
+	e_open->attr.sample_type 	= PERF_SAMPLE_TIME 	|
 					  PERF_SAMPLE_RAW  	|
 					  PERF_SAMPLE_CPU	|
 					  PERF_SAMPLE_TID  	;
+	e_open->attr.__reserved_1	= 0;
+	e_open->attr.read_format	= 0;
 
-	fd = perf_event_open(e_open->attr,e_open->pid,e_open->cpu	\
+	fd = perf_event_open(&e_open->attr,e_open->pid,e_open->cpu	\
 				,e_open->group_id,e_open->flags);
 
 	if(fd < 0) {
