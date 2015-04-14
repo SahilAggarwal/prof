@@ -7,9 +7,9 @@
 #include "mmap_page.h"
 #include "shared.h"
 
-char *events[] = {
+char *ftrace_events[] = {
+			"sched/sched_switch/"
 //			"sched/sched_wakeup/",
-			"sched/sched_switch/",
 //			"kprobes/clone/",
 //			"raw_syscalls/sys_enter/",
 //			"syscalls/sys_enter_open/",
@@ -20,32 +20,52 @@ char *events[] = {
 //			"syscalls/sys_enter_mmap/"
                  };
 
+__u64 soft_events[]  = {
+			PERF_COUNT_SW_CONTEXT_SWITCHES,
+		};
+
 struct event_list_map *event_list_map__init() 
 {
-	int nr_events = ARR_SIZE(events);
+	int nr_fevents = ARR_SIZE(ftrace_events);
+	int nr_sevents = ARR_SIZE(soft_events);
+
 	struct event_list *tmp;
 	struct event_list_map *elist_map  = malloc(sizeof(struct event_list_map));
 	elist_map->elist = malloc(sizeof(struct event_list));
+	elist_map->nr    = 0;
 
 	INIT_LIST_HEAD(&(elist_map->elist->list));
 
-	int nr = 0;
+	// Ftrace events
 	int i;
-	for(i=0; i < nr_events; i++) {
+	for(i=0; i < nr_fevents; i++) {
 
-                int id = event__get_id(events[i]);
+                int id = event__get_id(ftrace_events[i]);
                 if(id < 0)  {
-                        fprintf(stderr,"Failed to get %s id -- Skipping\n",events[i]);
+                        fprintf(stderr,"Failed to get %s id.\n",ftrace_events[i]);
+			return NULL;
 		}
 		else {
-			tmp       = malloc(sizeof(struct event_list));
-			tmp->id   = id;
-			tmp->type = 1<<i;
-			++nr;
+			tmp         = malloc(sizeof(struct event_list));
+			tmp->config = id;
+			tmp->e_type = 1<<elist_map->nr;
+			elist_map->nr++;
+			tmp->type   = PERF_TYPE_TRACEPOINT;
 			list_add_tail(&(tmp->list), &(elist_map->elist->list));
 		}
 	}
-	elist_map->nr = nr;
+
+	// Software inbuild events
+	for(i=0;i < nr_sevents; i++) {
+		
+		tmp         = malloc(sizeof(struct event_list));
+		tmp->config = soft_events[i];
+		tmp->type   = PERF_TYPE_SOFTWARE;
+		tmp->e_type = 1<<elist_map->nr;
+		elist_map->nr++;
+		list_add_tail(&(tmp->list), &(elist_map->elist->list)); 
+	}
+
 	return elist_map;
 }
 
@@ -62,14 +82,16 @@ struct event_map *event_map__init(struct event_list_map *elist_map,int cpu,pid_t
 	int  i=0;
 	list_for_each(pos, &(elist_map->elist->list)) {
 
-		tmp = list_entry(pos, struct event_list, list);	
+		tmp = list_entry(pos, struct event_list, list);
 	
-		event_map->events[i].type	 	 = tmp->type;
-		event_map->events[i].e_open.id    	 = tmp->id;
+		event_map->events[i].e_type	 	 = tmp->e_type;
 		event_map->events[i].e_open.cpu  	 = cpu;
 		event_map->events[i].e_open.group_id	 = -1;
 		event_map->events[i].e_open.flags	 = 0;
 		event_map->events[i].e_open.pid  	 = pid;
+		
+		event_map->events[i].e_open.attr.config  = tmp->config;
+		event_map->events[i].e_open.attr.type    = tmp->type;
 
 		event_map->events[i].mmap_pages = perf_event__open(
                                                   &event_map->events[i].e_open
