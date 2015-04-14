@@ -1,30 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <poll.h>
+#include <glib.h>
 
-#include "thread.h"
+#include "thread_map.h"
 #include "output.h"
 #include "mmap_page.h"
 #include "shared.h"
 
 extern struct wakeup wakeup;
 
-struct thread *
-thread_init(struct probe_buff *buff,pid_t pid)
+struct thread_map *
+thread_map__init(struct cpu_map *cpu_map,struct probe_buff *buff,pid_t pid)
 {
-	struct thread *thread 		 = malloc(sizeof(struct thread));
+	struct thread_map *thread_map = malloc(sizeof(*thread_map) + 
+					sizeof(struct thread)*cpu_map->nr);
+	
 	struct event_list_map *elist_map = event_list_map__init();
-	if(elist_map == NULL) {
-		fprintf(stderr,"Failed to init event list");
-		return NULL;
+	thread_map->nr = cpu_map->nr;
+
+	int i;
+	for(i=0; i < thread_map->nr; i++) {
+		if(thread_init(&thread_map->threads[i],elist_map, \
+		   buff,cpu_map->cpus[i],pid)) {
+			printf("Failed to init thread\n");
+			return NULL;
+		}
 	}
-        thread->buff 			 = buff;
-        thread->event_map 		 = event_map__init(elist_map,-1,pid);
+	return thread_map;
+}
+
+int thread_map__start_threads(struct thread_map *thread_map) 
+{
+	int i;
+	for(i=0; i< thread_map->nr; i++) {
+		if(thread_start(&thread_map->threads[i])) {
+			fprintf(stderr,"Failed to start thread\n");
+			return -1;
+		}
+	}
+	return 0;
+}
+
+static int
+thread_init(struct thread *thread,struct event_list_map *elist_map, \
+	    struct probe_buff *buff,int cpu, pid_t pid)
+{
+        thread->buff = buff;
+        thread->event_map = event_map__init(elist_map,cpu,pid);
         if(thread->event_map == NULL) {
-                fprintf(stderr,"Failed to init event map\n");
-                return NULL;
+                fprintf(stderr,"Faield to init event map\n");
+                return -1;
         }
-        return thread;
+        return 0;
 }
 
 int thread_start(struct thread *thread) 

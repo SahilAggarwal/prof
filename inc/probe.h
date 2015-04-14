@@ -2,12 +2,12 @@
 #define _H_PROBE
 
 #include "cpu_map.h"
-#include "thread.h"
+#include "thread_map.h"
 
 struct probe {
 	struct probe_buff    *buff;
 	struct cpu_map       *cpu_map;
-	struct thread        *thread;
+	struct thread_map    *thread_map;
 };
 
 int probe_start(char *,char **,pid_t);
