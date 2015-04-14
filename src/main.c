@@ -24,6 +24,7 @@ struct wakeup wakeup = {
 };
 
 void signal_handler() {
+	printf("Signal\n");
         char data[1] = {1};
         __sync_add_and_fetch(&wakeup.ctrlc,1);
         write(wakeup.wr_fd,data,1);

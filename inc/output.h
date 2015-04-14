@@ -23,13 +23,13 @@ struct trace_common {
 
 struct sched_switch {
 	struct trace_common 	common;
-	int			prev_pid;
-	int			next_pid;
-	int			next_cpu;
-	char			prev_prio;
-	char 			prev_state;
-	char			next_prio;
-	char			next_state;
+	char	 		prev_comm[16];
+	pid_t			prev_pid;
+	int 			prev_prio;
+	long			prev_state;
+	char			next_comm[16];
+	pid_t			next_pid;
+	int			next_prio;
 };
 
 struct sched_wakeup {

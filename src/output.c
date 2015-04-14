@@ -30,7 +30,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			case PERF_RECORD_SAMPLE:
 				if(attr.sample_type & PERF_SAMPLE_TID) {
                                         struct perf_record_sample_tid *tid = sample;
-                                        sprintf(str," TID: %d, PID: %d",    		\
+                                        sprintf(str,"TID: %d, PID: %d",    		\
                                                            tid->tid,   			\
                                                            tid->pid    			);
 					sample += sizeof(*tid);
@@ -47,7 +47,6 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					sprintf(str +strlen(str),"ID: %d",id->stream_id);
 					sample += sizeof(*id);
 				}
-
 				if(attr.sample_type & PERF_SAMPLE_CPU) {
 					struct perf_record_sample_cpu *cpu = sample;
 					sprintf(str + strlen(str)," CPU: %d",cpu->cpu);
@@ -56,14 +55,15 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			
 				if(attr.sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
-
 					if(out->e_type & SCHED_SWITCH) {
 						GET_PROBE_DATA(sched_switch);
 
 						sprintf(str + strlen(str), 	
-						" PrevPID: %d NextPID:%d\n",
-								data->prev_pid,
-								data->next_pid);
+						" PrevPID: %d PrevComm: %s NextComm: %s NextPID:%d\n",
+											data->prev_pid,
+											data->prev_comm,
+											data->next_comm,
+											data->next_pid);
 
 					}
 					if(out->e_type & SCHED_WAKEUP) {
