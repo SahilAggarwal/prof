@@ -30,7 +30,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			case PERF_RECORD_SAMPLE:
 				if(attr.sample_type & PERF_SAMPLE_TID) {
                                         struct perf_record_sample_tid *tid = sample;
-                                        sprintf(str,"TID: %d, PID: %d",    		\
+                                        sprintf(str," TID: %d, PID: %d",    		\
                                                            tid->tid,   			\
                                                            tid->pid    			);
 					sample += sizeof(*tid);
@@ -47,6 +47,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					sprintf(str +strlen(str),"ID: %d",id->stream_id);
 					sample += sizeof(*id);
 				}
+
 				if(attr.sample_type & PERF_SAMPLE_CPU) {
 					struct perf_record_sample_cpu *cpu = sample;
 					sprintf(str + strlen(str)," CPU: %d",cpu->cpu);
@@ -55,15 +56,17 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			
 				if(attr.sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
+					if(out->e_type & CONTEXT_SWITCH) {
+						sprintf(str + strlen(str)," CONTEXT_SWITCH\n");
+					}
+
 					if(out->e_type & SCHED_SWITCH) {
 						GET_PROBE_DATA(sched_switch);
 
 						sprintf(str + strlen(str), 	
-						" PrevPID: %d PrevComm: %s NextComm: %s NextPID:%d\n",
-											data->prev_pid,
-											data->prev_comm,
-											data->next_comm,
-											data->next_pid);
+						" PrevPID: %d NextPID:%d\n",
+								data->prev_pid,
+								data->next_pid);
 
 					}
 					if(out->e_type & SCHED_WAKEUP) {
@@ -118,6 +121,29 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 												data->fd,
 												data->offset);
 					}
+					if(out->e_type & MM_PAGE_ALLOC) {
+						GET_PROBE_DATA(mm_page_alloc);
+
+						sprintf(str + strlen(str)," PAGEALLOC \n");
+					}
+					if(out->e_type & BLOCK_ISSUE) {
+						GET_PROBE_DATA(block_rq_issue);
+						sprintf(str + strlen(str)," BLK_ISSUE Sectors: %d  Mode: %s\n",
+													data->nr_sector,
+													data->rwbs);
+					}
+                                        if(out->e_type & BLOCK_INSRT) {
+                                                GET_PROBE_DATA(block_rq_issue);
+
+                                                sprintf(str + strlen(str)," BLK_INSERT Sectors: %d  Mode: %s\n",
+                                                                                                        data->nr_sector,
+                                                                                                        data->rwbs);
+                                        }
+                                        if(out->e_type & BLOCK_COMPL) {
+                                                GET_PROBE_DATA(block_rq_complete);
+                                                sprintf(str + strlen(str)," BLK_COMPLT\n");
+                                        }
+						
 					sample += sizeof(*raw);
 				}
 				probe_buff->write(probe_buff,str,strlen(str));

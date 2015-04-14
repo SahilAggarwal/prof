@@ -54,7 +54,6 @@ static int probe_start_exec(char *exec, char **args)
 
 		if(execv(exec,args) == -1)
 			fprintf(stderr,"Failed to exec\n");
-
 		exit(0);
 
 	} else if(pid > 0) {

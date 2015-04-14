@@ -43,7 +43,7 @@ int probe_buff__write(struct probe_buff *probe_buff,char *buff,int len)
 	int nleft = probe_buff->size - probe_buff->nwrite;
 
 	if(len > nleft) {
-		fprintf(stderr,"\nBuffer overflow, flushing out...\n");
+		fprintf(stderr,"Buffer overflow, flushing out...\n");
 		if(probe_buff__flush(probe_buff) <= 0) {
 			fprintf(stderr,"Failed to flush out\n ");
 			return 0;

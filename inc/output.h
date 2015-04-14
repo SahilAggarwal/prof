@@ -23,13 +23,13 @@ struct trace_common {
 
 struct sched_switch {
 	struct trace_common 	common;
-	char	 		prev_comm[16];
-	pid_t			prev_pid;
-	int 			prev_prio;
-	long			prev_state;
-	char			next_comm[16];
-	pid_t			next_pid;
-	int			next_prio;
+	int			prev_pid;
+	int			next_pid;
+	int			next_cpu;
+	char			prev_prio;
+	char 			prev_state;
+	char			next_prio;
+	char			next_state;
 };
 
 struct sched_wakeup {
@@ -101,6 +101,35 @@ struct sys_enter_mmap {
 	long long		flags;
 	long long		fd;
 	long long		offset;
+};
+
+struct mm_page_alloc {
+	struct trace_common	common;
+	long long		page;
+	int			order;
+	int			gdp_flag;
+	int			mig_type;
+};
+
+struct block_rq_issue {
+	struct trace_common	common;
+	int			dev;
+	long long		sector;
+	int			nr_sector;
+	int			bytes;
+	char			rwbs[8];
+	char			comm[16];
+	char 			cmd[4];
+};
+
+struct block_rq_complete {
+	struct trace_common	common;
+	int			dev;
+	long long		sector;
+	int			nr_sector;
+	int			error;
+	char			rwbs[8];
+	char			cmd[4];
 };
 
 struct getnameprobe {

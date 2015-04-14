@@ -5,8 +5,8 @@
 #include <linux/perf_event.h>
 #include "list.h"
 
-#define SCHED_WAKEUP    1<<0
-#define SCHED_SWITCH    1<<1
+#define SCHED_SWITCH	1<<0
+#define SCHED_WAKEUP 	1<<1
 #define SYS_CLONE	1<<2
 #define SYS_ENTER       1<<3
 #define SYS_ENTER_OPEN  1<<4
@@ -15,6 +15,11 @@
 #define SYS_ENTER_WRITE	1<<7
 #define SYS_ENTER_LSEEK 1<<8
 #define SYS_ENTER_MMAP  1<<9
+#define MM_PAGE_ALLOC   1<<10
+#define BLOCK_ISSUE	1<<11
+#define BLOCK_COMPL	1<<12
+#define BLOCK_INSRT	1<<13
+#define CONTEXT_SWITCH	1<<14
 
 
 struct event_open {
@@ -28,7 +33,7 @@ struct event_open {
 
 struct event {
 	struct event_open       e_open;
-	int                     type;
+	int                     e_type;
 	struct mmap_pages	*mmap_pages;
 	struct probe_buff	*probe_buff;
 };
@@ -40,7 +45,8 @@ struct event_map {
 
 struct event_list {
 	struct 	list_head list;
-	int  	id;
+	int  	config;
+	int 	e_type;
 	int 	type;
 };
 

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <poll.h>
-#include <glib.h>
 
 #include "thread_map.h"
 #include "output.h"
@@ -91,7 +90,7 @@ void *thread_loop(void *arg)
 		for(;i < event_map->nr; i++) {
 			//if(pollfd[i].revents & POLLIN) {
 				if(pollfd[i].fd == event_map->events[i].mmap_pages->fd) {
-					out.e_type = event_map->events[i].type;
+					out.e_type = event_map->events[i].e_type;
 					out.attr   = event_map->events[i].e_open.attr;
 					out.probe_buff   = thread->buff;
 					mmap_pages_read(event_map->events[i].mmap_pages,
@@ -103,9 +102,7 @@ void *thread_loop(void *arg)
 			//}
 		}
         }
-	sem_wait(&thread->buff->sem);
 	thread_get_counters(event_map);
-	sem_post(&thread->buff->sem);
 }
 
 void thread_get_counters(struct event_map *event_map)
@@ -116,10 +113,16 @@ void thread_get_counters(struct event_map *event_map)
 		int cpu = event_map->events[i].e_open.cpu;
 		int fd  = event_map->events[i].mmap_pages->fd;
 		read(fd,&counters,sizeof(counters));
+		if(counters.nr_events <= 0)
+			continue;
 
-		switch(event_map->events[i].type) {
-		
-		case SCHED_SWITCH	: printf("CPU : %3d | Context Switches : %d\n",
+		switch(event_map->events[i].e_type) {
+	
+		case SCHED_SWITCH       : printf("CPU : %3d | Sched Switches   : %d\n",
+                                          cpu,counters.nr_events);
+                                          break;
+	
+		case CONTEXT_SWITCH	: printf("CPU : %3d | Context Switches : %d\n",
 				   	  cpu,counters.nr_events);
 					  break;
 
@@ -130,6 +133,7 @@ void thread_get_counters(struct event_map *event_map)
 		case SYS_ENTER_WRITE	: printf("CPU : %3d | Files writen     : %d\n",
 					  cpu,counters.nr_events);
 					  break;
+
 		case SYS_ENTER_LSEEK	: printf("CPU : %3d | Lseeks           : %d\n",
 					  cpu,counters.nr_events);
 					  break;
@@ -137,9 +141,11 @@ void thread_get_counters(struct event_map *event_map)
 		case SYS_ENTER_READ	: printf("CPU : %3d | Files Read       : %d\n",
 					  cpu,counters.nr_events);
 					  break;
+
 		case SYS_EXIT_READ	: printf("CPU : %3d | Exit Reads       : %d\n",
 					  cpu,counters.nr_events);
 					  break;
+
 		case SYS_CLONE		: printf("CPU : %3d | Clone            : %d\n",
 					  cpu,counters.nr_events);
 					  break;
@@ -151,6 +157,10 @@ void thread_get_counters(struct event_map *event_map)
 		case SYS_ENTER_MMAP	: printf("CPU : %3d | Mmap             : %d\n",
 					  cpu,counters.nr_events);
 					  break;
+		
+		case MM_PAGE_ALLOC	: printf("CPU : %3d | Pages            : %d\n",
+					  cpu,counters.nr_events);
+                                          break;
 		}
 	}
 }
