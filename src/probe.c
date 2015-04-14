@@ -62,16 +62,14 @@ static int probe_start_exec(char *exec, char **args)
 			fprintf(stderr,"Failed to initiate probe");
 			return -1;
 		}
-		if(thread_map__start_threads(probe->thread_map)) {
+		if(thread_start(probe->thread)) {
 			fprintf(stderr,"Failed to start threads");
 			return -1;
 		}
 		probe_enable(probe);
 		sem_post(sem);
 	
-		int i;	
-		for(i=0; i < probe->thread_map->nr; i++)
-			pthread_join(probe->thread_map->threads[i].tid,NULL);
+		pthread_join(probe->thread->tid,NULL);
 	
 		probe_buff__flush(probe->buff);
 	}
@@ -85,16 +83,14 @@ static int probe_start_pid(pid_t pid)
 		fprintf(stderr,"Failed to initiate probe");
 		return -1;
 	}
-	if(thread_map__start_threads(probe->thread_map)) {
+	if(thread_start(probe->thread)) {
 		fprintf(stderr,"Failed to start threads");
 		return -1;
 	}
 
 	probe_enable(probe);
 	
-	int i;
-	for(i=0; i < probe->thread_map->nr; i++)
-                pthread_join(probe->thread_map->threads[i].tid,NULL);
+	pthread_join(probe->thread->tid,NULL);
 	
 	probe_buff__flush(probe->buff);
 
@@ -107,20 +103,14 @@ static struct probe *probe_init(pid_t pid)
 
 	struct probe *probe = malloc(sizeof(*probe));
 
-	probe->cpu_map = cpu_map__read_all();
-	if(probe->cpu_map == NULL) {
-                fprintf(stderr,"Failed to map CPUs");
-                return NULL;
-        }
-
 	probe->buff = probe_buff__init();
 	if(probe->buff == NULL) {
 		fprintf(stderr,"Failed to init probe buff\n");
 		return NULL;
 	}
 
-	probe->thread_map = thread_map__init(probe->cpu_map,probe->buff,pid);
-	if(probe->thread_map == NULL) {
+	probe->thread = thread_init(probe->buff,pid);
+	if(probe->thread == NULL) {
 		fprintf(stderr,"Faield to map threads\n");
 		return NULL;
 	}
@@ -130,16 +120,12 @@ static struct probe *probe_init(pid_t pid)
 
 void probe_enable(struct probe *probe)
 {
-	int i;
-	for(i=0; i < probe->thread_map->nr; i++)
-        {
-		int j = 0;
-		struct event_map *event_map = probe->thread_map->threads[i].event_map;
-		for(; j < event_map->nr; j++)
-                if(syscall(__NR_ioctl, event_map->events[j].mmap_pages->fd, PERF_EVENT_IOC_ENABLE, 0)) {
-                        fprintf(stderr,"Failed to enable sampling\n");
-                        continue;
-                }
-        }
+	int i = 0;
+	struct event_map *event_map = probe->thread->event_map;
+	for(; i < event_map->nr; i++)
+	if(syscall(__NR_ioctl, event_map->events[i].mmap_pages->fd, PERF_EVENT_IOC_ENABLE, 0)) {
+		fprintf(stderr,"Failed to enable sampling\n");
+		continue;
+	}
 	printf("Probe Enabled\n");
 }
