@@ -5,6 +5,7 @@
 #include "output.h"
 #include "event_map.h"
 #include "probe_buff.h"
+#include "events.h"
 
 #define GET_PROBE_DATA(type)  \
 	struct type *data = (struct type *) raw->data;
@@ -24,138 +25,100 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 		if(nread + header->size > size) 
 			break;
 
-		char str[1024];	
 		switch(header->type) {
 
-			case PERF_RECORD_SAMPLE:
-				if(attr.sample_type & PERF_SAMPLE_TID) {
-                                        struct perf_record_sample_tid *tid = sample;
-                                        sprintf(str," TID: %d, PID: %d",    		\
-                                                           tid->tid,   			\
-                                                           tid->pid    			);
-					sample += sizeof(*tid);
-                                }
+		char str[1024];
+		case PERF_RECORD_SAMPLE:
+			if(attr.sample_type & PERF_SAMPLE_TID) 
+				sample_tid_entry(&sample,		\
+						 str + 0		);
 
-                                if(attr.sample_type & PERF_SAMPLE_TIME) {
-                                        struct perf_record_sample_time *time = sample;
-                                        sprintf(str + strlen(str)," TIME: %ld",time->time);
-					sample += sizeof(*time);
-                                }
+			if(attr.sample_type & PERF_SAMPLE_TIME)
+				sample_time_entry(&sample, 		\
+						  str + strlen(str)	);
 
-				if(attr.sample_type & PERF_SAMPLE_STREAM_ID) {
-					struct perf_record_sample_stream_id *id = sample;
-					sprintf(str +strlen(str),"ID: %d",id->stream_id);
-					sample += sizeof(*id);
-				}
+			if(attr.sample_type & PERF_SAMPLE_CPU)
+				sample_cpu_entry(&sample,		\
+						 str + strlen(str)	);
+		
+			if(attr.sample_type & PERF_SAMPLE_RAW) {
+				struct perf_record_sample_raw *tmp = sample;
+				void *raw = tmp->data;
 
-				if(attr.sample_type & PERF_SAMPLE_CPU) {
-					struct perf_record_sample_cpu *cpu = sample;
-					sprintf(str + strlen(str)," CPU: %d",cpu->cpu);
-					sample += sizeof(*cpu);
-				}
-			
-				if(attr.sample_type & PERF_SAMPLE_RAW) {
-					struct perf_record_sample_raw *raw = sample;
+				switch(out->e_type) {
 
-					if(out->e_type & SCHED_SWITCH) {
-						GET_PROBE_DATA(sched_switch);
+				case SCHED_SWITCH:
+					sample_raw_sched_switch_entry(&raw,  \
+						         str + strlen(str)   );
+					break;
 
-						sprintf(str + strlen(str), 	
-						" PrevPID: %d PrevComm: %s NextPID:%d NextComm: %s\n",
-								data->prev_pid,
-								data->prev_comm,
-								data->next_pid,
-								data->next_comm);
+				case TASK_NEW:
+					sample_raw_newtask_entry(&raw,	     \
+						    str + strlen(str)        );
+					break;
 
-					}
-					if(out->e_type & TASK_NEW) {
-						GET_PROBE_DATA(task_newtask);
-						
-						sprintf(str + strlen(str),
-							" NEWTASK Pid: %d Comm: %s\n",
-									data->pid,
-									data->comm);
-					}
-					if(out->e_type & SYS_ENTER_OPEN) {
-						GET_PROBE_DATA(sys_enter_open);
-						sprintf(str + strlen(str)," EN_OPEN No: %lx Mode: %d\n",data->nr,  \
-										 	 data->mode);
-					}			
-					if(out->e_type & SYS_ENTER_READ) {
-						GET_PROBE_DATA(sys_enter_read)
+				case SYS_ENTER_OPEN:
+					sample_raw_sys_enter_entry(&raw,     \
+                                                      str + strlen(str)      );
+					break;
+
+				case SYS_ENTER_READ:
+					sample_raw_enter_read_entry(&raw,    \
+                                                       str + strlen(str)     );
+                                        break;
+
+				case SYS_EXIT_READ:
+					sample_raw_exit_read_entry(&raw,      \
+                                                       str + strlen(str)      );
+                                        break;
+
+				case SYS_ENTER_WRITE:
+					sample_raw_enter_write_entry(&raw,    \
+                                                        str + strlen(str)     );
+                                        break;
+
+				case SYS_ENTER_LSEEK:
+					sample_raw_enter_lseek_entry(&raw,    \
+                                                        str + strlen(str)     );
+                                        break;
+
+				case SYS_ENTER:
+					sample_raw_sys_enter_entry(&raw,      \
+                                                      str + strlen(str)       );
+                                        break;
+
+				case SYS_ENTER_MMAP:
+					sample_raw_enter_mmap_entry(&raw,      \
+                                                      str + strlen(str)        );
+                                        break;
+
+				case PAGE_FAULT_HANDLE:
+					sample_raw_page_fault_entry(&raw,      \
+                                                      str + strlen(str)        );
+                                        break;					
+
+				case MM_PAGE_ALLOC:
+					sample_raw_page_alloc_entry(&raw,      \
+                                                      str + strlen(str)        );
+                                        break;
+
+				case BLOCK_ISSUE:
+					sample_raw_block_issue_entry(&raw,     \
+                                                      str + strlen(str)        );
+                                        break;
+
+				case BLOCK_INSRT:
+					sample_raw_block_insert_entry(&raw,    \
+                                                      str + strlen(str)        );
+                                        break;
 					
-						sprintf(str + strlen(str), " EN_READ FD: %d RCount: %d\n",data->fd,
-											    	  data->count);
-					}
-					if(out->e_type & SYS_EXIT_READ) {
-						GET_PROBE_DATA(sys_exit_read);
-						
-						sprintf(str + strlen(str)," EX_READ Read: %d\n",data->ret);
-					}
-					if(out->e_type & SYS_ENTER_WRITE) {
-						GET_PROBE_DATA(sys_enter_write);
-
-						sprintf(str + strlen(str), " WRITE  FD: %d WCount: %d\n",data->fd,
-												  data->count); 
-					}
-					if(out->e_type & SYS_ENTER_LSEEK) {
-						GET_PROBE_DATA(sys_enter_lseek);
-	
-						sprintf(str + strlen(str), " LSEEK FD: %d Off: %d Orig: %d\n",
-												data->fd,
-												data->offset,
-												data->origin); 
-					}
-					if(out->e_type & SYS_ENTER) {
-						GET_PROBE_DATA(sys_enter);
-
-						sprintf(str + strlen(str), " SYS_ENTER Id: %d\n",data->id);
-					}
-					if(out->e_type & SYS_ENTER_MMAP) {
-						GET_PROBE_DATA(sys_enter_mmap);
-						
-						sprintf(str + strlen(str)," MMAP Len: %d Fd: %d Off: %d\n",
-												data->len,
-												data->fd,
-												data->offset);
-					}
-					if(out->e_type & PAGE_FAULT_HANDLE) {
-						GET_PROBE_DATA(page_fault_handle);
-							
-						sprintf(str + strlen(str)," PAGEFAULT Type: %s\n",
-												(data->flag & VM_FAULT_MAJOR) ?
-												"MAJOR":"MINOR");
-					}
-					if(out->e_type & MM_PAGE_ALLOC) {
-						GET_PROBE_DATA(mm_page_alloc);
-
-						sprintf(str + strlen(str)," PAGEALLOC \n");
-					}
-					if(out->e_type & BLOCK_ISSUE) {
-						GET_PROBE_DATA(block_rq_issue);
-						sprintf(str + strlen(str)," BLK_ISSUE Sectors: %d  Mode: %s\n",
-													data->nr_sector,
-													data->rwbs);
-					}
-                                        if(out->e_type & BLOCK_INSRT) {
-                                                GET_PROBE_DATA(block_rq_issue);
-
-                                                sprintf(str + strlen(str)," BLK_INSERT Sectors: %d  Mode: %s\n",
-                                                                                                        data->nr_sector,
-                                                                                                        data->rwbs);
-                                        }
-                                        if(out->e_type & BLOCK_COMPL) {
-                                                GET_PROBE_DATA(block_rq_complete);
-                                                sprintf(str + strlen(str)," BLK_COMPLT\n");
-                                        }
-						
-					sample += sizeof(*raw);
+				sample += sizeof(*raw);
 				}
 				probe_buff->write(probe_buff,str,strlen(str));
-		};
+			}
+		}
 		nread += header->size;
 		buf   += header->size;
 	}
 	return nread;
-		
 }		

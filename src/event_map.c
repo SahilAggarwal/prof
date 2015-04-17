@@ -7,21 +7,20 @@
 #include "shared.h"
 
 char *ftrace_events[] = {
-			"sched/sched_switch/",
-			"task/task_newtask/",
-			"raw_syscalls/sys_enter/",
-			"syscalls/sys_enter_open/",
-			"syscalls/sys_enter_read/",
-			"syscalls/sys_exit_read/",
-			"syscalls/sys_enter_write/",
-			"syscalls/sys_enter_lseek/",
+			"sched/sched_switch/"		,
+			"task/task_newtask/"		,
+			"raw_syscalls/sys_enter/"	,
+			"syscalls/sys_enter_open/"	,
+			"syscalls/sys_enter_read/"	,
+			"syscalls/sys_exit_read/"	,
+			"syscalls/sys_enter_write/"	,
+			"syscalls/sys_enter_lseek/"	,
 
-			"syscalls/sys_enter_mmap/",
-			"kmem/mm_page_fault_handle/",
-			"kmem/mm_page_alloc/",
+			"syscalls/sys_enter_mmap/"	,
+			"kmem/mm_page_fault_handle/"	,
+			"kmem/mm_page_alloc/"		,
 
-			"block/block_rq_issue/",
-			"block/block_rq_complete/",
+			"block/block_rq_issue/"		,
 			"block/block_rq_insert/"
                  };
 

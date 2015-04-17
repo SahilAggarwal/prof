@@ -17,8 +17,7 @@
 #define PAGE_FAULT_HANDLE 	1<<9
 #define MM_PAGE_ALLOC   	1<<10
 #define BLOCK_ISSUE		1<<11
-#define BLOCK_COMPL		1<<12
-#define BLOCK_INSRT		1<<13
+#define BLOCK_INSRT		1<<12
 
 struct event_open {
         __u64                   id;
