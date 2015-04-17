@@ -8,9 +8,7 @@
 
 char *ftrace_events[] = {
 			"sched/sched_switch/",
-			"sched/sched_wakeup/",
-			"kprobes/clone/",
-
+			"task/task_newtask/",
 			"raw_syscalls/sys_enter/",
 			"syscalls/sys_enter_open/",
 			"syscalls/sys_enter_read/",
@@ -19,6 +17,7 @@ char *ftrace_events[] = {
 			"syscalls/sys_enter_lseek/",
 
 			"syscalls/sys_enter_mmap/",
+			"kmem/mm_page_fault_handle/",
 			"kmem/mm_page_alloc/",
 
 			"block/block_rq_issue/",
@@ -27,7 +26,6 @@ char *ftrace_events[] = {
                  };
 
 __u64 soft_events[]  = {
-			PERF_COUNT_SW_CONTEXT_SWITCHES,
 		};
 
 struct event_list_map *event_list_map__init() 

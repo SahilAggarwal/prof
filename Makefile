@@ -11,7 +11,7 @@ RM = rm -f
 all: $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): $(OBJDIR)/shared.o $(OBJDIR)/main.o $(OBJDIR)/probe.o $(OBJDIR)/cpu_map.o $(OBJDIR)/thread_map.o $(OBJDIR)/event_map.o $(OBJDIR)/perf_event.o $(OBJDIR)/mmap_page.o $(OBJDIR)/output.o $(OBJDIR)/probe_buff.o
-	$(CC) $(INCDIR) $^ -g -lpthread $(shell pkg-config --cflags --libs glib-2.0) -o $@
+	$(CC) $(INCDIR) $^ -g -lpthread -o $@
 
 $(OBJDIR)/shared.o: $(SRCDIR)/shared.c
 	$(CC) $(INCDIR) -c $^ -g -o $@
@@ -26,10 +26,10 @@ $(OBJDIR)/cpu_map.o: $(SRCDIR)/cpu_map.c
 	$(CC) $(INCDIR) -c $^ -g -o $@
 
 $(OBJDIR)/thread_map.o: $(SRCDIR)/thread_map.c
-	$(CC) $(INCDIR) $(shell pkg-config --cflags --libs glib-2.0) -c $^ -g -o $@
+	$(CC) $(INCDIR) -c $^ -g -o $@
 
 $(OBJDIR)/event_map.o: $(SRCDIR)/event_map.c
-	$(CC) $(INCDIR) $(shell pkg-config --cflags --libs glib-2.0) -c $^ -g -o $@
+	$(CC) $(INCDIR) -c $^ -g -o $@
 
 $(OBJDIR)/perf_event.o: $(SRCDIR)/perf_event.c
 	$(CC) $(INCDIR) -c $^ -g -o $@

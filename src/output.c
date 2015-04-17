@@ -56,27 +56,25 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			
 				if(attr.sample_type & PERF_SAMPLE_RAW) {
 					struct perf_record_sample_raw *raw = sample;
-					if(out->e_type & CONTEXT_SWITCH) {
-						sprintf(str + strlen(str)," CONTEXT_SWITCH\n");
-					}
 
 					if(out->e_type & SCHED_SWITCH) {
 						GET_PROBE_DATA(sched_switch);
 
 						sprintf(str + strlen(str), 	
-						" PrevPID: %d NextPID:%d\n",
+						" PrevPID: %d PrevComm: %s NextPID:%d NextComm: %s\n",
 								data->prev_pid,
-								data->next_pid);
+								data->prev_comm,
+								data->next_pid,
+								data->next_comm);
 
 					}
-					if(out->e_type & SCHED_WAKEUP) {
-						GET_PROBE_DATA(sched_wakeup);
+					if(out->e_type & TASK_NEW) {
+						GET_PROBE_DATA(task_newtask);
 						
-						sprintf(str + strlen(str)," SCHED_WAKE CPU: %d\n",data->target_cpu);
-					}
-					if(out->e_type & SYS_CLONE) {
-						GET_PROBE_DATA(sys_clone);
-						sprintf(str + strlen(str), " CLONE PID: %d\n",data->ret);
+						sprintf(str + strlen(str),
+							" NEWTASK Pid: %d Comm: %s\n",
+									data->pid,
+									data->comm);
 					}
 					if(out->e_type & SYS_ENTER_OPEN) {
 						GET_PROBE_DATA(sys_enter_open);
@@ -120,6 +118,13 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 												data->len,
 												data->fd,
 												data->offset);
+					}
+					if(out->e_type & PAGE_FAULT_HANDLE) {
+						GET_PROBE_DATA(page_fault_handle);
+							
+						sprintf(str + strlen(str)," PAGEFAULT Type: %s\n",
+												(data->flag & VM_FAULT_MAJOR) ?
+												"MAJOR":"MINOR");
 					}
 					if(out->e_type & MM_PAGE_ALLOC) {
 						GET_PROBE_DATA(mm_page_alloc);

@@ -121,10 +121,6 @@ void thread_get_counters(struct event_map *event_map)
 		case SCHED_SWITCH       : printf("CPU : %3d | Sched Switches   : %d\n",
                                           cpu,counters.nr_events);
                                           break;
-	
-		case CONTEXT_SWITCH	: printf("CPU : %3d | Context Switches : %d\n",
-				   	  cpu,counters.nr_events);
-					  break;
 
 		case SYS_ENTER_OPEN	: printf("CPU : %3d | Files opened     : %d\n",
 				     	  cpu,counters.nr_events);
@@ -145,10 +141,6 @@ void thread_get_counters(struct event_map *event_map)
 		case SYS_EXIT_READ	: printf("CPU : %3d | Exit Reads       : %d\n",
 					  cpu,counters.nr_events);
 					  break;
-
-		case SYS_CLONE		: printf("CPU : %3d | Clone            : %d\n",
-					  cpu,counters.nr_events);
-					  break;
 		
 		case SYS_ENTER		: printf("CPU : %3d | Syscalls         : %d\n",
 					  cpu,counters.nr_events);
@@ -159,6 +151,14 @@ void thread_get_counters(struct event_map *event_map)
 					  break;
 		
 		case MM_PAGE_ALLOC	: printf("CPU : %3d | Pages            : %d\n",
+					  cpu,counters.nr_events);
+                                          break;
+		
+		case PAGE_FAULT_HANDLE	: printf("CPU : %3d | Faults           : %d\n",
+					  cpu,counters.nr_events);
+                                          break;
+
+		case TASK_NEW		: printf("CPU : %3d | NewTasks         : %d\n",
 					  cpu,counters.nr_events);
                                           break;
 		}
