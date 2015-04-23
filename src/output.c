@@ -92,6 +92,21 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
                                                       str + strlen(str)        );
                                         break;
 
+				case SYS_EXIT_BRK:
+					sample_raw_sys_exit_brk_entry(&raw,    \
+							str + strlen(str)      );
+                                        break;
+
+				case KMALLOC:
+					sample_raw_kmalloc_entry(&raw, 	       \
+							str + strlen(str)      );
+					break;
+
+				case KMEM_CACHE_ALLOC:
+					sample_raw_kmem_cache_entry(&raw,      \
+							str + strlen(str)      );
+					break;
+
 				case PAGE_FAULT_HANDLE:
 					sample_raw_page_fault_entry(&raw,      \
                                                       str + strlen(str)        );
@@ -100,6 +115,21 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 				case MM_PAGE_ALLOC:
 					sample_raw_page_alloc_entry(&raw,      \
                                                       str + strlen(str)        );
+                                        break;
+				
+				case MM_PAGE_ALLOC_ZONE:
+					sample_raw_page_alloc_zone_entry(&raw, \
+						      str + strlen(str)        );
+					break;
+
+				case MM_PAGE_FREE:
+                                        sample_raw_page_free_entry(&raw,       \
+                                                      str + strlen(str)        );
+                                        break;
+
+				case MM_PAGE_FREE_BATCHED:
+                                        sample_raw_page_free_batched_entry(&raw, \
+                                                      str + strlen(str)          );
                                         break;
 
 				case BLOCK_ISSUE:
@@ -111,6 +141,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					sample_raw_block_insert_entry(&raw,    \
                                                       str + strlen(str)        );
                                         break;
+
 					
 				sample += sizeof(*raw);
 				}

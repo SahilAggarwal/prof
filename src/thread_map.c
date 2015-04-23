@@ -118,49 +118,56 @@ void thread_get_counters(struct event_map *event_map)
 
 		switch(event_map->events[i].e_type) {
 	
-		case SCHED_SWITCH       : printf("CPU : %3d | Sched Switches   : %d\n",
-                                          cpu,counters.nr_events);
+		case SCHED_SWITCH       : PRINT_COUNTER(Sched Switches);
                                           break;
 
-		case SYS_ENTER_OPEN	: printf("CPU : %3d | Files opened     : %d\n",
-				     	  cpu,counters.nr_events);
+		case SYS_ENTER_OPEN	: PRINT_COUNTER(Files opened);
 					  break;
 
-		case SYS_ENTER_WRITE	: printf("CPU : %3d | Files writen     : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_ENTER_WRITE	: PRINT_COUNTER(Files writen);
 					  break;
 
-		case SYS_ENTER_LSEEK	: printf("CPU : %3d | Lseeks           : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_ENTER_LSEEK	: PRINT_COUNTER(Lseeks);
 					  break;
 
-		case SYS_ENTER_READ	: printf("CPU : %3d | Files Read       : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_ENTER_READ	: PRINT_COUNTER(Files Read);
 					  break;
 
-		case SYS_EXIT_READ	: printf("CPU : %3d | Exit Reads       : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_EXIT_READ	: PRINT_COUNTER(Exit Reads);
 					  break;
 		
-		case SYS_ENTER		: printf("CPU : %3d | Syscalls         : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_ENTER		: PRINT_COUNTER(Syscalls);
 					  break;
 		
-		case SYS_ENTER_MMAP	: printf("CPU : %3d | Mmap             : %d\n",
-					  cpu,counters.nr_events);
+		case SYS_ENTER_MMAP	: PRINT_COUNTER(Mmap);
 					  break;
 		
-		case MM_PAGE_ALLOC	: printf("CPU : %3d | Pages            : %d\n",
-					  cpu,counters.nr_events);
+		case MM_PAGE_ALLOC	: PRINT_COUNTER(Pages);
                                           break;
 		
-		case PAGE_FAULT_HANDLE	: printf("CPU : %3d | Faults           : %d\n",
-					  cpu,counters.nr_events);
+		case PAGE_FAULT_HANDLE	: PRINT_COUNTER(Faults);
                                           break;
 
-		case TASK_NEW		: printf("CPU : %3d | NewTasks         : %d\n",
-					  cpu,counters.nr_events);
+		case TASK_NEW		: PRINT_COUNTER(New Tasks);
                                           break;
+
+		case SYS_EXIT_BRK	: PRINT_COUNTER(Brk);
+					  break;
+		
+		case KMALLOC		: PRINT_COUNTER(Kmalloc);
+					  break;
+		
+		case MM_PAGE_ALLOC_ZONE : PRINT_COUNTER(Page Zone);
+					  break;
+
+		case KMEM_CACHE_ALLOC	: PRINT_COUNTER(Kmem Cache);
+					  break;
+
+		case MM_PAGE_FREE	: PRINT_COUNTER(Page free);
+					  break;
+	
+		case MM_PAGE_FREE_BATCHED : PRINT_COUNTER(Page free Batched);
+                                            break;
 		}
 	}
 }

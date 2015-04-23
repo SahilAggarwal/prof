@@ -45,3 +45,4 @@ $(OBJDIR)/probe_buff.o: $(SRCDIR)/probe_buff.c
 
 clean:
 	rm obj/* 
+	rm *.text

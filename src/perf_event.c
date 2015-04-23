@@ -39,7 +39,7 @@ perf_event__open(struct event_open *e_open)
 	}
 
 	struct mmap_pages *mmap_pages = NULL;
-	mmap_pages = mmap_pages__new(fd,1);
+	mmap_pages = mmap_pages__new(fd,8);
 	if(mmap_pages != NULL) {
 		mmap_pages->attr = e_open->attr;
 		fcntl(fd, F_SETFL, O_NONBLOCK);

@@ -1,6 +1,8 @@
 #ifndef _H_EVENTS
 #define _H_EVENTS
 
+#define VM_FAULT_MAJOR  0x0004
+
 #define __field(type, item)		type item;
 #define __array(type, item, len)	type item[len];
 
@@ -110,7 +112,6 @@ DEFINE_EVENT(sample_raw_enter_open,
 		__array( char            , filename   , 8     )
 		__field( long long       , flags	      )
 		__field( long long       , mode		      )	
-	
 	),
 
 	TP_PRINT(" ENTER_OPEN Mode:%d\n",
@@ -219,6 +220,56 @@ DEFINE_EVENT(sample_raw_enter_mmap,
         )
 );
 
+DEFINE_EVENT(sample_raw_sys_exit_brk,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__field( int		, nr		      )
+		__field( long long      , ret		      )
+	),
+
+	TP_PRINT(" EXIT_BRK\n"
+	)
+);
+
+DEFINE_EVENT(sample_raw_kmalloc,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__field( long long 	, call_site	      )
+		__array( const char	, ptr		, 8   )
+		__field( long long	, bytes_req           )
+		__field( long long	, bytes_alloc	      )
+		__field( int		, gfp_flags	      )
+	),
+	
+	TP_PRINT(" KMALLOC BytesReq:%d BytesAlloc:%d\n",
+		 data->bytes_req,
+		 data->bytes_alloc
+	)
+);
+
+DEFINE_EVENT(sample_raw_kmem_cache,
+
+        TP_STRUCT(
+                TP_STRUCT_COMMON
+
+                __field( long long      , call_site           )
+                __array( const char     , ptr           , 8   )
+                __field( long long      , bytes_req           )
+                __field( long long      , bytes_alloc         )
+                __field( int            , gfp_flags           )
+        ),
+
+        TP_PRINT(" KMEM_CACHE BytesReq:%d BytesAlloc:%d\n",
+                 data->bytes_req,
+                 data->bytes_alloc
+        )
+);
+
+
 DEFINE_EVENT(sample_raw_page_fault,
 
 	TP_STRUCT(
@@ -227,8 +278,8 @@ DEFINE_EVENT(sample_raw_page_fault,
 		__field( int             , flag                 )
 	),
 	
-	TP_PRINT(" PAGE_FAULT Flag:%d\n",
-		 data->flag
+	TP_PRINT(" PAGE_FAULT Type:%s\n",
+		 data->flag & VM_FAULT_MAJOR ? "MAJOR":"MINOR"
         )
 );
 
@@ -244,6 +295,50 @@ DEFINE_EVENT(sample_raw_page_alloc,
 	),
 	
 	TP_PRINT(" PAGE_ALLOC\n"
+        )
+);
+
+DEFINE_EVENT(sample_raw_page_alloc_zone,
+	
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__array( char		, page		,   8  )
+		__field( int		, order 	       )
+		__field( int		, migrate_type	       )
+	),
+
+	TP_PRINT(" PAGE_ALLOC_ZONE Order:%d MigrateType:%d\n",
+		 data->order,
+		 data->migrate_type
+	)
+);
+
+DEFINE_EVENT(sample_raw_page_free,
+	
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+		
+		__array( char           , page          ,   8  )
+                __field( int            , order                )
+	),
+	
+	TP_PRINT(" PAGE_FREE Order:%d\n",
+		 data->order
+	)
+);
+
+DEFINE_EVENT(sample_raw_page_free_batched,
+	
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__array( char           , page          ,   8  )
+                __field( int            , order                )
+	),
+
+	TP_PRINT(" PAGE_FREE_BATCHED Order:%d\n",
+                 data->order
         )
 );
 
@@ -290,6 +385,5 @@ DEFINE_EVENT(sample_raw_block_insert,
                  data->rwbs
         )
 );
-
 
 #endif

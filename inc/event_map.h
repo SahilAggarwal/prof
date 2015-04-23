@@ -14,10 +14,16 @@
 #define SYS_ENTER_WRITE		1<<6
 #define SYS_ENTER_LSEEK 	1<<7
 #define SYS_ENTER_MMAP  	1<<8
-#define PAGE_FAULT_HANDLE 	1<<9
-#define MM_PAGE_ALLOC   	1<<10
-#define BLOCK_ISSUE		1<<11
-#define BLOCK_INSRT		1<<12
+#define SYS_EXIT_BRK		1<<9
+#define KMALLOC			1<<10
+#define KMEM_CACHE_ALLOC	1<<11
+#define PAGE_FAULT_HANDLE 	1<<12
+#define MM_PAGE_ALLOC   	1<<13
+#define MM_PAGE_ALLOC_ZONE	1<<14
+#define MM_PAGE_FREE		1<<15
+#define MM_PAGE_FREE_BATCHED	1<<16
+#define BLOCK_ISSUE		1<<17
+#define BLOCK_INSRT		1<<18
 
 struct event_open {
         __u64                   id;
