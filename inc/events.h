@@ -15,53 +15,46 @@
         __field( unsigned char  ,  common_preempt_count )	\
         __field( int            ,  common_pid		)	\
 
-#define DEFINE_EVENT(name,tstruct,p_args)	 		\
+#define DEFINE_EVENT(name,tstruct)	 			\
 	struct name {						\
 		tstruct						\
 	};							\
 								\
-	void name##_entry(void **arg,char *str) {		\
-		struct name *data = (struct name *)*arg;	\
-		sprintf(str,p_args);				\
-		*arg += sizeof(struct name);			\
+	void name##_entry(void **,char *);			
+
+#define DEFINE_PRINT_FUNC(name,p_args)				\
+	void name##_entry(void **arg, char *str) {		\
+		struct name *data = (struct name *)*arg;        \
+                sprintf(str,p_args);                            \
+                *arg += sizeof(struct name);                    \
 	}
 	
+typedef void (*func)(void **,char *);
 
+func get_output_function(char *, char **);
 
 DEFINE_EVENT(sample_tid,
 	
 	TP_STRUCT( 
-		__field( __u32, tid )
-		__field( __u32, pid )	
-	),	
-
-	TP_PRINT("TID:%d PID:%d ",
-		 data->tid,
-	         data->pid
+		__field( int , tid )
+		__field( int , pid )	
 	)
+
 );
 
 DEFINE_EVENT(sample_time,
 
 	TP_STRUCT(
-		__field( __u64, time )
-	),
-
-	TP_PRINT(" TIME:%ld",
-		 data->time
-		)
+		__field( long long, time )
+	)
 );
 
 DEFINE_EVENT(sample_cpu,
 	
 	TP_STRUCT(
-		__field( __u32, cpu )
-		__field( __u32, res )
-	),
-	
-	TP_PRINT(" CPU:%d",
-		 data->cpu
-		)
+		__field( int  , cpu )
+		__field( int  , res )
+	)
 );
 
 DEFINE_EVENT(sample_raw_sched_switch,
@@ -76,14 +69,8 @@ DEFINE_EVENT(sample_raw_sched_switch,
 		__array( char           , next_comm ,   16      )
                 __field( int            , next_pid              )
                 __field( int            , next_prio             )
-	),
+	)
 
-	TP_PRINT(" SWITCH PrevComm:%s PrevPid:%d NextComm:%s NextPid:%d\n",
-		 data->prev_comm,
-		 data->prev_pid,
-		 data->next_comm,
-		 data->next_pid
-		)
 );
 
 DEFINE_EVENT(sample_raw_newtask,
@@ -95,12 +82,8 @@ DEFINE_EVENT(sample_raw_newtask,
 		__array( char           , comm 	     ,  16    )
 		__field( unsigned long  , flags	     	      )
 		__field( short          , oom_score           )
-	),
-
-	TP_PRINT(" NEWTASK Pid:%d Comm: %s\n",
-		 data->pid,
-		 data->comm
 	)
+
 );
 
 DEFINE_EVENT(sample_raw_enter_open,
@@ -112,11 +95,7 @@ DEFINE_EVENT(sample_raw_enter_open,
 		__array( char            , filename   , 8     )
 		__field( long long       , flags	      )
 		__field( long long       , mode		      )	
-	),
-
-	TP_PRINT(" ENTER_OPEN Mode:%d\n",
-		 data->mode
-        )
+	)
 );
 
 DEFINE_EVENT(sample_raw_sys_enter,
@@ -126,11 +105,8 @@ DEFINE_EVENT(sample_raw_sys_enter,
 
 		__field( long long       , id               )
 		__array( long long       , args       , 6   )
-	),
+	)
 	
-	TP_PRINT(" SYS_ENTER Id:%d\n",
-		 data->id
-        )
 );
 
 DEFINE_EVENT(sample_raw_enter_read,
@@ -142,12 +118,7 @@ DEFINE_EVENT(sample_raw_enter_read,
                 __field( long long       , fd                 )
 		__array( char            , buf        , 8     )
 		__field( long long       , count              )
-	),
-	
-	TP_PRINT(" ENTER_READ Fd:%d Count:%d\n",
-		 data->fd,
-		 data->count
-        )
+	)
 );
 
 DEFINE_EVENT(sample_raw_exit_read,
@@ -157,11 +128,8 @@ DEFINE_EVENT(sample_raw_exit_read,
 		
 		__field( int             , nr                 )
 		__field( long long	 , ret		      )
-	),
+	)
 
-	TP_PRINT(" EXIT_READ Ret:%d\n",
-		 data->ret
-        )
 );
 
 DEFINE_EVENT(sample_raw_enter_write,
@@ -173,12 +141,8 @@ DEFINE_EVENT(sample_raw_enter_write,
                 __field( long long       , fd                 )
                 __array( char            , buf        , 8     )
                 __field( long long       , count              )
-        ),
+        )
 
-        TP_PRINT(" ENTER_WRITE Fd:%d Count:%d\n",
-		 data->fd,
-		 data->count
-	)
 );
 
 DEFINE_EVENT(sample_raw_enter_lseek,
@@ -190,13 +154,8 @@ DEFINE_EVENT(sample_raw_enter_lseek,
                 __field( long long       , fd                 )
 		__field( long long       , offset             )
 		__field( long long       , origin             )
-	),
+	)
 
-	TP_PRINT(" LSEEK Fd:%d Offset:%d Origin:%d\n",
-		 data->fd,
-		 data->offset,
-		 data->origin 
-        )
 );
 
 DEFINE_EVENT(sample_raw_enter_mmap,
@@ -211,13 +170,8 @@ DEFINE_EVENT(sample_raw_enter_mmap,
 	        __field( long long       , flags	      )
 		__field( long long       , fd		      )
 		__field( long long       , offset	      )
-	),
+	)
 
-	TP_PRINT(" MMAP Len:%d Fd:%d Offset:%d\n",
-		 data->len,
-		 data->fd,
-		 data->offset
-        )
 );
 
 DEFINE_EVENT(sample_raw_sys_exit_brk,
@@ -227,9 +181,6 @@ DEFINE_EVENT(sample_raw_sys_exit_brk,
 
 		__field( int		, nr		      )
 		__field( long long      , ret		      )
-	),
-
-	TP_PRINT(" EXIT_BRK\n"
 	)
 );
 
@@ -243,12 +194,8 @@ DEFINE_EVENT(sample_raw_kmalloc,
 		__field( long long	, bytes_req           )
 		__field( long long	, bytes_alloc	      )
 		__field( int		, gfp_flags	      )
-	),
-	
-	TP_PRINT(" KMALLOC BytesReq:%d BytesAlloc:%d\n",
-		 data->bytes_req,
-		 data->bytes_alloc
 	)
+	
 );
 
 DEFINE_EVENT(sample_raw_kmem_cache,
@@ -261,11 +208,6 @@ DEFINE_EVENT(sample_raw_kmem_cache,
                 __field( long long      , bytes_req           )
                 __field( long long      , bytes_alloc         )
                 __field( int            , gfp_flags           )
-        ),
-
-        TP_PRINT(" KMEM_CACHE BytesReq:%d BytesAlloc:%d\n",
-                 data->bytes_req,
-                 data->bytes_alloc
         )
 );
 
@@ -276,11 +218,8 @@ DEFINE_EVENT(sample_raw_page_fault,
                 TP_STRUCT_COMMON
 			
 		__field( int             , flag                 )
-	),
-	
-	TP_PRINT(" PAGE_FAULT Type:%s\n",
-		 data->flag & VM_FAULT_MAJOR ? "MAJOR":"MINOR"
-        )
+	)
+
 );
 
 DEFINE_EVENT(sample_raw_page_alloc,
@@ -292,10 +231,7 @@ DEFINE_EVENT(sample_raw_page_alloc,
 		__field( int             , order               )
 		__field( int             , gfp_flag            )
 		__field( int             , mig_type            )
-	),
-	
-	TP_PRINT(" PAGE_ALLOC\n"
-        )
+	)
 );
 
 DEFINE_EVENT(sample_raw_page_alloc_zone,
@@ -306,12 +242,8 @@ DEFINE_EVENT(sample_raw_page_alloc_zone,
 		__array( char		, page		,   8  )
 		__field( int		, order 	       )
 		__field( int		, migrate_type	       )
-	),
-
-	TP_PRINT(" PAGE_ALLOC_ZONE Order:%d MigrateType:%d\n",
-		 data->order,
-		 data->migrate_type
 	)
+
 );
 
 DEFINE_EVENT(sample_raw_page_free,
@@ -321,11 +253,8 @@ DEFINE_EVENT(sample_raw_page_free,
 		
 		__array( char           , page          ,   8  )
                 __field( int            , order                )
-	),
-	
-	TP_PRINT(" PAGE_FREE Order:%d\n",
-		 data->order
 	)
+	
 );
 
 DEFINE_EVENT(sample_raw_page_free_batched,
@@ -335,11 +264,8 @@ DEFINE_EVENT(sample_raw_page_free_batched,
 
 		__array( char           , page          ,   8  )
                 __field( int            , order                )
-	),
+	)
 
-	TP_PRINT(" PAGE_FREE_BATCHED Order:%d\n",
-                 data->order
-        )
 );
 
 DEFINE_EVENT(sample_raw_block_issue,
@@ -354,14 +280,8 @@ DEFINE_EVENT(sample_raw_block_issue,
 		__array( char            , rwbs         , 8    )
 		__array( char            , comm         , 16   )
       		__array( char		 , cmd		, 4    )
-	),
+	)
 
-	TP_PRINT(" BLOCK_ISSUE Dev:%d,%d Nr_sectors:%d Rwbs:%s\n",
-		 (unsigned int) data->dev >> 20,
-                 (unsigned int) (data->dev & ( 1U << 20 ) - 1),
-		 data->nr_sector,
-		 data->rwbs
-        )
 );
 
 DEFINE_EVENT(sample_raw_block_insert,
@@ -376,14 +296,8 @@ DEFINE_EVENT(sample_raw_block_insert,
                 __array( char            , rwbs         , 8    )
                 __array( char            , comm         , 16   )
                 __array( char            , cmd          , 4    )
-        ),
-
-        TP_PRINT(" BLOCK_INSERT Dev:%d,%d Nr_sectors:%d Rwbs:%s\n",
-                 (unsigned int) data->dev >> 20,
-		 (unsigned int) (data->dev & ( 1U << 20 ) - 1),
-                 data->nr_sector,
-                 data->rwbs
         )
+
 );
 
 #endif

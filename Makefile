@@ -10,7 +10,7 @@ RM = rm -f
 
 all: $(BINDIR)/$(TARGET)
 
-$(BINDIR)/$(TARGET): $(OBJDIR)/shared.o $(OBJDIR)/main.o $(OBJDIR)/probe.o $(OBJDIR)/cpu_map.o $(OBJDIR)/thread_map.o $(OBJDIR)/event_map.o $(OBJDIR)/perf_event.o $(OBJDIR)/mmap_page.o $(OBJDIR)/output.o $(OBJDIR)/probe_buff.o
+$(BINDIR)/$(TARGET): $(OBJDIR)/shared.o $(OBJDIR)/main.o $(OBJDIR)/events.o $(OBJDIR)/probe.o $(OBJDIR)/cpu_map.o $(OBJDIR)/thread_map.o $(OBJDIR)/event_map.o $(OBJDIR)/perf_event.o $(OBJDIR)/mmap_page.o $(OBJDIR)/output.o $(OBJDIR)/probe_buff.o
 	$(CC) $(INCDIR) $^ -g -lpthread -o $@
 
 $(OBJDIR)/shared.o: $(SRCDIR)/shared.c
@@ -41,6 +41,9 @@ $(OBJDIR)/output.o: $(SRCDIR)/output.c
 	$(CC) $(INCDIR) -c $^ -g -o $@
 
 $(OBJDIR)/probe_buff.o: $(SRCDIR)/probe_buff.c
+	$(CC) $(INCDIR) -c $^ -g -o $@
+
+$(OBJDIR)/events.o: $(SRCDIR)/events.c
 	$(CC) $(INCDIR) -c $^ -g -o $@
 
 clean:

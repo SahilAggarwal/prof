@@ -7,8 +7,8 @@
 #include "shared.h"
 
 int 		opt_fs;
-int 		opt_cpu;
-int		opt_mem;
+int 		opt_sched;
+int		opt_mm;
 int		opt_blk;
 int 		opt_net;
 int		opt_all;
@@ -45,34 +45,34 @@ int main(int argc, char **argv){
 	int no_args 	= 0;
 
         opt_fs        	= 0;
-        opt_cpu       	= 0;
-        opt_mem       	= 0;
+        opt_sched      	= 0;
+        opt_mm       	= 0;
         opt_blk       	= 0;
         opt_all       	= 1;
 
         pid    		= -1;
         exec    	= NULL;
 
-	while((opt = getopt (argc, argv, "p:n:e:hfcmbti:la:"))
+	while((opt = getopt (argc, argv, "p:n:e:hfsmbti:la:"))
                 != -1)
                 switch(opt)
                 {
                         case 'p': pid = atoi(optarg); opt_pid=1;
-                                break;
+                                  break;
                         case 'e': exec = optarg; opt_exec=1; args[no_args++] = optarg;
-                                break;
+                                  break;
                         case 'f': opt_fs = 1; opt_all = 0;
-                                break;
-                        case 'c': opt_cpu = 1; opt_all = 0;
-                                break;
-                        case 'm': opt_mem = 1; opt_all = 0;
-                                break;
+                                  break;
+                        case 's': opt_sched = 1; opt_all = 0;
+                                  break;
+                        case 'm': opt_mm = 1; opt_all = 0;
+                                  break;
                         case 'b': opt_blk = 1; opt_all = 0;
-                                break;
+                                  break;
                         case 't': opt_net = 1; opt_all = 0;
-                                break;
+                                  break;
                         case 'a': args[no_args++] = optarg;
-                                break;
+                                  break;
                         case 'h':
                         case '?':
                                 USAGE_ERROR;

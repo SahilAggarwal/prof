@@ -5,26 +5,6 @@
 #include <linux/perf_event.h>
 #include "list.h"
 
-#define SCHED_SWITCH		1<<0
-#define TASK_NEW		1<<1
-#define SYS_ENTER       	1<<2
-#define SYS_ENTER_OPEN  	1<<3
-#define SYS_ENTER_READ  	1<<4
-#define SYS_EXIT_READ   	1<<5
-#define SYS_ENTER_WRITE		1<<6
-#define SYS_ENTER_LSEEK 	1<<7
-#define SYS_ENTER_MMAP  	1<<8
-#define SYS_EXIT_BRK		1<<9
-#define KMALLOC			1<<10
-#define KMEM_CACHE_ALLOC	1<<11
-#define PAGE_FAULT_HANDLE 	1<<12
-#define MM_PAGE_ALLOC   	1<<13
-#define MM_PAGE_ALLOC_ZONE	1<<14
-#define MM_PAGE_FREE		1<<15
-#define MM_PAGE_FREE_BATCHED	1<<16
-#define BLOCK_ISSUE		1<<17
-#define BLOCK_INSRT		1<<18
-
 struct event_open {
         __u64                   id;
         int                     cpu;
@@ -36,11 +16,13 @@ struct event_open {
 
 struct event {
 	struct event_open       e_open;
-	int                     e_type;
+	void	 		(*print_output)(void **,char *);
+	char			*title;
 	struct mmap_pages	*mmap_pages;
 	struct probe_buff	*probe_buff;
 };
 
+/* Final event map to be used later */
 struct event_map {
 	int 		nr;
 	struct event 	events[];
@@ -49,10 +31,15 @@ struct event_map {
 struct event_list {
 	struct 	list_head list;
 	int  	config;
-	int 	e_type;
+	void    (*print_output)(void **,char *);
+	char	*title;
 	int 	type;
 };
 
+/* List of events with their particular Id's(config)
+ * from /sys/kernel/debug/traceing/events/<event>/id
+ * . This map is used to only initialize event_map.
+ */
 struct event_list_map {
         int 		  nr;
         struct event_list *elist;

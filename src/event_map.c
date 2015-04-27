@@ -1,100 +1,147 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "event_map.h"
 #include "perf_event.h"
 #include "mmap_page.h"
 #include "shared.h"
+#include "events.h"
 
-char *ftrace_events[] = {
-			"sched/sched_switch/"			,
-			"task/task_newtask/"			,
-			"raw_syscalls/sys_enter/"		,
-			"syscalls/sys_enter_open/"		,
-			"syscalls/sys_enter_read/"		,
-			"syscalls/sys_exit_read/"		,
-			"syscalls/sys_enter_write/"		,
-			"syscalls/sys_enter_lseek/"		,
+#define SCHED_EVENTS	"sched/sched_switch/"                   ,	\
+                        "task/task_newtask/"                    ,
 
-			"syscalls/sys_enter_mmap/"		, 
-			"syscalls/sys_exit_brk/"		, 
+#define FS_EVENTS	"raw_syscalls/sys_enter/"               ,	\
+                        "syscalls/sys_enter_open/"              ,	\
+                        "syscalls/sys_enter_read/"              ,	\
+                        "syscalls/sys_exit_read/"               ,	\
+                        "syscalls/sys_enter_write/"             ,	\
+                        "syscalls/sys_enter_lseek/"             ,	
 
-			/* Heavy activity for these events may indicate 
-			 * that a specific cache is justified, particularly 
-			 * if kmalloc slab pages are getting significantly
-			 * internal fragmented as a result of the allocation 
-			 * pattern. By correlating kmalloc with kfree, it may 
-                         * be possible to identify memory leaks and where
-			 * the allocation sites were.
-			*/
-	
-			"kmem/kmalloc/"				, 
-		
-			/* These events are similar in usage to the kmalloc-
-			 * related events except that it is likely easier to 
-                         * pin the event down to a specific cache. At the time
-			 * of writing, no information is available on what slab 
-			 * is being allocated from, but the call_site can usually
-                         *  be used to extrapolate that information
-			 */	
-			"kmem/kmem_cache_alloc/"		,
+/*
+Kmalloc 	       : Heavy activity for these events may indicate
+                         that a specific cache is justified, particularly
+                         if kmalloc slab pages are getting significantly
+                         internal fragmented as a result of the allocation
+                         pattern. By correlating kmalloc with kfree, it may
+                         be possible to identify memory leaks and where
+                         the allocation sites were
 
-			/* The return value of this event can be compared to check if 
-			 * fault was major/minor. 
-			 */	
-			"kmem/mm_page_fault_handle/"		,
+Kmem_cache_alloc       : These events are similar in usage to the kmalloc-
+                         related events except that it is likely easier to
+                         pin the event down to a specific cache. At the time
+                         of writing, no information is available on what slab
+                         is being allocated from, but the call_site can 
+                         usually be used to extrapolate that information
 
-			/* mm_page_alloc is a simple indicator of page 
-                         * allocator activity. Pages may be allocated 
-                         * from the per-CPU alloca tor (high performance)
-                         * or the buddy allocator
-                         */
-			"kmem/mm_page_alloc/"			,
+mm_page_fault_handle   : The return value of this event can be compared to 
+			 check if fault was major/minor
 
-			/* If pages are allocated directly from the buddy allocator,
-			 * the mm_page_alloc_zone_locked event is triggered. This 
-			 * event is important as high amounts of activity imply 
-			 * high activity on the zone->lock. Taking this lock
-			 * impairs performance by disabling interrupts, dirtying 
-			 * cache lines between CPUs and serialising many CPUs.
-			 */
-			"kmem/mm_page_alloc_zone_locked/"	,
+mm_page_alloc	       : mm_page_alloc is a simple indicator of page
+                         allocator activity. Pages may be allocated
+                         from the per-CPU alloca tor (high performance)
+                         or the buddy allocator
 
-			/* When a page is freed directly by the caller, the only
-			 * mm_page_free event is triggered. Significant amounts of 
-			 * activity here could indicate that the callers should be 
-			 * batching their activities
-			 */
-			"/kmem/mm_page_free/"			,
+mm_page_alloc_zone_   : If pages are allocated directly from the buddy 
+			allocator, the mm_page_alloc_zone_locked event is 
+			triggered. This event is important as high amounts 
+			of activity imply high activity on the zone->lock. 
+			Taking this lock impairs performance by disabling 
+			interrupts, dirtying cache lines between CPUs and 
+			serialising many CPUs.
 
-			/* When pages are freed in batch, the also mm_page_free_batched
-			 * is triggered.Broadly speaking, pages are taken off the LRU
-			 * lock in bulk and freed in batch with a page list. Significant 
-			 * amounts of activity here could indicate that the system is 
-                         * under memory pressure and can also indicate contention on 
-                         * the zone->lru_lock
-			 */
-			"kmem/mm_page_free_batched/"		,
+mm_page_free	      : When a page is freed directly by the caller, the only
+                        mm_page_free event is triggered. Significant amounts 
+			of activity here could indicate that the callers 
+			should be batching their activities
+
+mm_page_free_batched  : When pages are freed in batch, the also 
+			mm_page_free_batched is triggered.Broadly speaking, 
+			pages are taken off the LRU lock in bulk and freed 
+			in batch with a page list. Significant amounts of 
+			activity here could indicate that the system is
+                        under memory pressure and can also indicate 
+			contention on the zone->lru_lock
+
+mm_page_alloc_extfrag : External fragmentation affects whether a high-order
+			allocation will be successful or not. For some types 
+			of hardware, this is important although it is avoided 
+			where possible. If the system is using huge pages and
+			needs to be able to resize the pool over the lifetime 
+			of the system, this value is important
+
+
+*/
+
+#define MM_EVENTS	"syscalls/sys_enter_mmap/"              ,	\
+                        "syscalls/sys_exit_brk/"                ,	\
+                        "kmem/kmalloc/"                         ,	\
+			"kmem/kmem_cache_alloc/"                ,	\
+			"kmem/mm_page_fault_handle/"            ,	\
+			"kmem/mm_page_alloc/"                   ,	\
+			"kmem/mm_page_alloc_zone_locked/"       ,	\
+			"kmem/mm_page_free/"			,	\
+			"kmem/mm_page_free_batched/"            ,	\
+//			"kmem/mm_page_alloc_extfrag/"           ,
+
+#define BLK_EVENTS 	"block/block_rq_issue/"                 ,	\
+                        "block/block_rq_insert/"		,
+
+extern int opt_sched;
+extern int opt_fs;
+extern int opt_mm;
+extern int opt_blk;
+extern int opt_blk;
+extern int opt_all;
 			
-			/* External fragmentation affects whether a high-order allocation
-			 * will be successful or not. For some types of hardware, this is
-			 * important although it is avoided where possible. If the system 
-                         * is using huge pages and needs to be able to resize the pool 
-                         * over the lifetime of the system, this value is important
-			 */
-	//		"kmem/mm_page_alloc_extfrag/"		,
 
-			"block/block_rq_issue/"			,
-			"block/block_rq_insert/"
-                 };
+// fevents = ftrace tracepoint events
+char *sched_fevents[]  = { SCHED_EVENTS  NULL };
+char *fs_fevents[]     = { FS_EVENTS     NULL };
+char *mm_fevents[]     = { MM_EVENTS     NULL };
+char *blk_fevents[]    = { BLK_EVENTS    NULL };	
 
-__u64 soft_events[]  = {
+char *all_fevents[] = { 
+			  SCHED_EVENTS 
+			  FS_EVENTS
+			  MM_EVENTS
+			  BLK_EVENTS 
+			  NULL
+                      };
+
+// sevents = inbuild software events
+__u64 all_sevents[]  = {
 		};
+
+int add_fevent_to_list(struct list_head *list, char **events) {
+	int nr_events = 0;
+	struct event_list *tmp;
+	int i = 0;
+	while(events[i] != NULL ) {
+
+                int id = event__get_id(events[i]);
+                if(id < 0)  {
+                        fprintf(stderr,"Failed to get %s id. -- Skipped\n",
+				events[i]);
+                }
+                else {
+                        tmp         = malloc(sizeof(struct event_list));
+                        tmp->config = id;
+			tmp->print_output = get_output_function(events[i],
+								&tmp->title);
+			nr_events++;
+                        tmp->type   = PERF_TYPE_TRACEPOINT;
+                        list_add_tail(&(tmp->list),list);
+                }
+		i++;
+        }	
+	return nr_events;
+}
 
 struct event_list_map *event_list_map__init() 
 {
-	int nr_fevents = ARR_SIZE(ftrace_events);
-	int nr_sevents = ARR_SIZE(soft_events);
+	int nr_fevents = ARR_SIZE(all_fevents);
+	int nr_sevents = ARR_SIZE(all_sevents);
 
 	struct event_list *tmp;
 	struct event_list_map *elist_map  = malloc(sizeof(struct event_list_map));
@@ -105,33 +152,56 @@ struct event_list_map *event_list_map__init()
 
 	// Ftrace events
 	int i;
-	for(i=0; i < nr_fevents; i++) {
-
-                int id = event__get_id(ftrace_events[i]);
-                if(id < 0)  {
-                        fprintf(stderr,"Failed to get %s id.\n",ftrace_events[i]);
+	if(opt_all) {
+		int ret = add_fevent_to_list(&(elist_map->elist->list),
+					     all_fevents);
+		if(!ret)
 			return NULL;
+		elist_map->nr += ret;
+	}
+	else {
+		int ret;
+		if(opt_sched) {
+			ret = add_fevent_to_list(&(elist_map->elist->list),
+						 sched_fevents);
+			if(!ret)
+				return NULL;
+			elist_map->nr += ret;
 		}
-		else {
-			tmp         = malloc(sizeof(struct event_list));
-			tmp->config = id;
-			tmp->e_type = 1<<elist_map->nr;
-			elist_map->nr++;
-			tmp->type   = PERF_TYPE_TRACEPOINT;
-			list_add_tail(&(tmp->list), &(elist_map->elist->list));
+		if(opt_fs) {
+			ret = add_fevent_to_list(&(elist_map->elist->list),
+						 fs_fevents);
+			if(!ret)
+				return NULL;
+			elist_map->nr += ret;
+		}
+		if(opt_mm) {
+			ret = add_fevent_to_list(&(elist_map->elist->list),
+						 mm_fevents);
+			if(!ret)
+				return NULL;
+			elist_map->nr += ret;
+		}
+		if(opt_blk) {
+			ret = add_fevent_to_list(&(elist_map->elist->list),
+						 blk_fevents);
+			if(!ret)
+				return NULL;
+			elist_map->nr += ret;
 		}
 	}
-
+/*
 	// Software inbuild events
 	for(i=0;i < nr_sevents; i++) {
 		
 		tmp         = malloc(sizeof(struct event_list));
-		tmp->config = soft_events[i];
+		tmp->config = all_sevents[i];
 		tmp->type   = PERF_TYPE_SOFTWARE;
 		tmp->e_type = 1<<elist_map->nr;
 		elist_map->nr++;
 		list_add_tail(&(tmp->list), &(elist_map->elist->list)); 
 	}
+*/
 
 	return elist_map;
 }
@@ -151,7 +221,8 @@ struct event_map *event_map__init(struct event_list_map *elist_map,int cpu,pid_t
 
 		tmp = list_entry(pos, struct event_list, list);
 	
-		event_map->events[i].e_type	 	 = tmp->e_type;
+		event_map->events[i].print_output	 = tmp->print_output;
+		event_map->events[i].title		 = strdup(tmp->title);
 		event_map->events[i].e_open.cpu  	 = cpu;
 		event_map->events[i].e_open.group_id	 = -1;
 		event_map->events[i].e_open.flags	 = 0;

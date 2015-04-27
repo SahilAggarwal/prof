@@ -6,15 +6,14 @@ void usage()
 {
         fprintf(stderr,"perf-prof [OPTION]\n\
                                 \n\
-                                -n <execname>           Trace execname\n\
                                 -p <pid>                Trace pid and its children\n\
                                 -e <exec>               Execute exec and trace it\n\
-                                -c                      Trace only CPU events\n\
+                                -s                      Trace only CPU events\n\
                                 -f                      Trace only FileSystem event\n\
                                 -m                      Trace only Memory events\n\
                                 -b                      Trace only Block events\n\
                                 -t                      Trace only Network events\n\
-                                -a                      Pass argument to the exec\n\
+                                -a <arg>                Pass argument to the exec\n\
                                                                                     \n\
                                 eg:  app-prof -ce test  Trace the CPU events of exec \n\
                                                         test                         \n\

@@ -67,7 +67,8 @@ void *thread_loop(void *arg)
 {
 	struct thread    *thread    = (struct thread *)arg;
 	struct event_map *event_map = thread->event_map;
-	struct pollfd    *pollfd    = malloc(sizeof(*pollfd) * (event_map->nr + 1));
+	struct pollfd    *pollfd    = malloc(sizeof(*pollfd) * 	\
+					    (event_map->nr + 1)	);
 
 	int i;
 	for(i=0; i<event_map->nr; i++) {
@@ -89,16 +90,11 @@ void *thread_loop(void *arg)
 		int i=0;
 		for(;i < event_map->nr; i++) {
 			//if(pollfd[i].revents & POLLIN) {
-				if(pollfd[i].fd == event_map->events[i].mmap_pages->fd) {
-					out.e_type = event_map->events[i].e_type;
-					out.attr   = event_map->events[i].e_open.attr;
-					out.probe_buff   = thread->buff;
-					mmap_pages_read(event_map->events[i].mmap_pages,
-							&out.reader);
-				}
-				else {
-                                	printf("Samething wrong, contact my developer\n");
-                        	}
+			out.attr       = event_map->events[i].e_open.attr;
+			out.probe_buff = thread->buff;
+			out.print      = event_map->events[i].print_output;
+			mmap_pages_read(event_map->events[i].mmap_pages,
+					&out.reader);
 			//}
 		}
         }
@@ -115,59 +111,9 @@ void thread_get_counters(struct event_map *event_map)
 		read(fd,&counters,sizeof(counters));
 		if(counters.nr_events <= 0)
 			continue;
-
-		switch(event_map->events[i].e_type) {
-	
-		case SCHED_SWITCH       : PRINT_COUNTER(Sched Switches);
-                                          break;
-
-		case SYS_ENTER_OPEN	: PRINT_COUNTER(Files opened);
-					  break;
-
-		case SYS_ENTER_WRITE	: PRINT_COUNTER(Files writen);
-					  break;
-
-		case SYS_ENTER_LSEEK	: PRINT_COUNTER(Lseeks);
-					  break;
-
-		case SYS_ENTER_READ	: PRINT_COUNTER(Files Read);
-					  break;
-
-		case SYS_EXIT_READ	: PRINT_COUNTER(Exit Reads);
-					  break;
-		
-		case SYS_ENTER		: PRINT_COUNTER(Syscalls);
-					  break;
-		
-		case SYS_ENTER_MMAP	: PRINT_COUNTER(Mmap);
-					  break;
-		
-		case MM_PAGE_ALLOC	: PRINT_COUNTER(Pages);
-                                          break;
-		
-		case PAGE_FAULT_HANDLE	: PRINT_COUNTER(Faults);
-                                          break;
-
-		case TASK_NEW		: PRINT_COUNTER(New Tasks);
-                                          break;
-
-		case SYS_EXIT_BRK	: PRINT_COUNTER(Brk);
-					  break;
-		
-		case KMALLOC		: PRINT_COUNTER(Kmalloc);
-					  break;
-		
-		case MM_PAGE_ALLOC_ZONE : PRINT_COUNTER(Page Zone);
-					  break;
-
-		case KMEM_CACHE_ALLOC	: PRINT_COUNTER(Kmem Cache);
-					  break;
-
-		case MM_PAGE_FREE	: PRINT_COUNTER(Page free);
-					  break;
-	
-		case MM_PAGE_FREE_BATCHED : PRINT_COUNTER(Page free Batched);
-                                            break;
-		}
+		printf("%-5s : %3d | %-20s : %d\n","CPU",
+	  	       cpu,
+		       event_map->events[i].title,
+		       counters.nr_events);
 	}
 }
