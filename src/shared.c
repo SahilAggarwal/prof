@@ -24,18 +24,14 @@ void usage()
                                 );
 }
 
-int valid_opts(int opt_pid,int opt_pname,int opt_exec)
+int valid_opts(int opt_pid,int opt_exec)
 {
-        if(!opt_pname && !opt_pid && !opt_exec)
+        if(!opt_pid && !opt_exec)
                 return 0;
 
-        if(opt_pname && opt_pid) {
-                fprintf(stderr,"Both pname and pid not allowed\n");
-                return 0;
-        }
 
-        if(opt_exec &&(opt_pname || opt_pid)) {
-                fprintf(stderr,"execname with pname or pid not allowed\n");
+        if(opt_exec && opt_pid) {
+                fprintf(stderr,"Both exec and pid not allowed\n");
                 return 0;
         }
         return 1;

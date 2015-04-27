@@ -14,7 +14,7 @@ struct wakeup {
 
 void usage();
 
-int valid_opts(int,int,int);
+int valid_opts(int,int);
 
 void panic(char *);
 

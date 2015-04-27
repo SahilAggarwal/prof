@@ -16,13 +16,17 @@ my $dbh = DBI->connect($dsn, $userid, $password, { RaiseError => 1}) or die $DBI
 
 print "Opened successfully\n";
 
-my $query  = qq(DROP TABLE COMPANY);
-my $rv =$dbh->do($query);
-if($rv < 0){
-        print $DBI::errstr;
-} else {
-        print "Cleaned the DB\n";
-}
+my $query;
+my $rv;
+eval {	
+	$query  = qq(DROP TABLE COMPANY);
+	$rv =$dbh->do($query);
+	if($rv < 0){
+		print $DBI::errstr;
+	} else {
+		print "Cleaned the DB\n";
+	}
+};
 
 $query = qq(CREATE TABLE COMPANY 
 	       (ID INT PRIMARY KEY NOT NULL,

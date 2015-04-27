@@ -38,7 +38,6 @@ int main(int argc, char **argv){
 
         int opt;
 	int pipe_fd[2];
-        int opt_pname 	= 0;
         int opt_pid   	= 0;
         int opt_exec  	= 0;
 
@@ -53,7 +52,7 @@ int main(int argc, char **argv){
         pid    		= -1;
         exec    	= NULL;
 
-	while((opt = getopt (argc, argv, "p:n:e:hfsmbti:la:"))
+	while((opt = getopt (argc, argv, "p:e:hfsmbti:la:"))
                 != -1)
                 switch(opt)
                 {
@@ -79,7 +78,7 @@ int main(int argc, char **argv){
                 }
 	args[no_args] = (char *)0;
 
-	if( !valid_opts(opt_pid,opt_pname,opt_exec) )
+	if( !valid_opts(opt_pid,opt_exec) )
 	{
 		USAGE_ERROR;
 		return EXIT_FAILURE;
