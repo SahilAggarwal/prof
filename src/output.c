@@ -49,7 +49,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 					
 				sample += sizeof(*raw);
 			}
-				probe_buff->write(probe_buff,str,strlen(str));
+			probe_buff->write(probe_buff,str,strlen(str));
 		}
 		nread += header->size;
 		buf   += header->size;

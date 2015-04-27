@@ -4,8 +4,6 @@
 #define USAGE_ERROR	usage()
 #define MAX_NR_ARGS 10
 
-#define ARR_SIZE(arr) 	(sizeof(arr)/sizeof(arr[0]))
-
 #define NR_EVENTS ARR_SIZE(events)
 
 struct wakeup {

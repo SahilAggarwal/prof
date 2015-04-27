@@ -140,8 +140,6 @@ int add_fevent_to_list(struct list_head *list, char **events) {
 
 struct event_list_map *event_list_map__init() 
 {
-	int nr_fevents = ARR_SIZE(all_fevents);
-	int nr_sevents = ARR_SIZE(all_sevents);
 
 	struct event_list *tmp;
 	struct event_list_map *elist_map  = malloc(sizeof(struct event_list_map));
