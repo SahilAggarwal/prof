@@ -111,9 +111,13 @@ void thread_get_counters(struct event_map *event_map)
 		read(fd,&counters,sizeof(counters));
 		if(counters.nr_events <= 0)
 			continue;
-		printf("%-5s : %3d | %-20s : %d\n","CPU",
+		printf("%-5s : %3d | %-20s : %5d | %-20s : %ld | %-20s : %ld\n","CPU",
 	  	       cpu,
 		       event_map->events[i].title,
-		       counters.nr_events);
+		       counters.nr_events,
+			"Time Enabled",
+		        counters.time_enabled,
+			"Time Running",
+			counters.time_running);
 	}
 }

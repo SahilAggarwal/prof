@@ -52,7 +52,7 @@ int main(int argc, char **argv){
         pid    		= -1;
         exec    	= NULL;
 
-	while((opt = getopt (argc, argv, "p:e:hfsmbti:la:"))
+	while((opt = getopt (argc, argv, "p:e:hfsmbni:la:"))
                 != -1)
                 switch(opt)
                 {
@@ -68,7 +68,7 @@ int main(int argc, char **argv){
                                   break;
                         case 'b': opt_blk = 1; opt_all = 0;
                                   break;
-                        case 't': opt_net = 1; opt_all = 0;
+                        case 'n': opt_net = 1; opt_all = 0;
                                   break;
                         case 'a': args[no_args++] = optarg;
                                   break;

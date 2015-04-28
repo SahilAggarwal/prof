@@ -87,11 +87,36 @@ mm_page_alloc_extfrag : External fragmentation affects whether a high-order
 #define BLK_EVENTS 	"block/block_rq_issue/"                 ,	\
                         "block/block_rq_insert/"		,
 
+
+/*
+net_dev_queue          : Entry point to Device Driver Interface to xmit.
+			 Queue a buffer for transmission to a network device.
+			 Packet recieved from IP layer. 
+
+net_dev_xmit	       : Transmit skb to device. Called directly if queue is
+			 empty.
+
+netif_receive_skb      : Entry point to DDI to process received data.
+
+netif_rx	       : Post buffer(skb) to the network code. This function
+			 receives a packet from Device Driver and queues it 
+			 for upper levels to process.
+
+ */ 
+#define NET_EVENTS	"net/net_dev_queue/"			,	\
+			"net/net_dev_xmit/"			,	\
+			"net/netif_receive_skb/"		,	\
+			"net/netif_rx/"				,	\
+			"syscalls/sys_enter_recvfrom/"		,	\
+			"syscalls/sys_enter_sendto/"		,
+
+
+// From src/main.c
 extern int opt_sched;
 extern int opt_fs;
 extern int opt_mm;
 extern int opt_blk;
-extern int opt_blk;
+extern int opt_net;
 extern int opt_all;
 			
 
@@ -100,12 +125,14 @@ char *sched_fevents[]  = { SCHED_EVENTS  NULL };
 char *fs_fevents[]     = { FS_EVENTS     NULL };
 char *mm_fevents[]     = { MM_EVENTS     NULL };
 char *blk_fevents[]    = { BLK_EVENTS    NULL };	
+char *net_fevents[]    = { NET_EVENTS    NULL };
 
 char *all_fevents[] = { 
 			  SCHED_EVENTS 
 			  FS_EVENTS
 			  MM_EVENTS
 			  BLK_EVENTS 
+			  NET_EVENTS
 			  NULL
                       };
 
@@ -186,6 +213,13 @@ struct event_list_map *event_list_map__init()
 			if(!ret)
 				return NULL;
 			elist_map->nr += ret;
+		}
+		if(opt_net) {
+			ret = add_fevent_to_list(&(elist_map->elist->list),
+						 net_fevents);
+			if(!ret)
+                                return NULL;
+                        elist_map->nr += ret;
 		}
 	}
 /*

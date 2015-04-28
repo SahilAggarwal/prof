@@ -57,7 +57,7 @@ DEFINE_EVENT(sample_cpu,
 	)
 );
 
-DEFINE_EVENT(sample_raw_sched_switch,
+DEFINE_EVENT(sched_switch,
 
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -73,7 +73,7 @@ DEFINE_EVENT(sample_raw_sched_switch,
 
 );
 
-DEFINE_EVENT(sample_raw_newtask,
+DEFINE_EVENT(newtask,
 	
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -86,7 +86,7 @@ DEFINE_EVENT(sample_raw_newtask,
 
 );
 
-DEFINE_EVENT(sample_raw_enter_open,
+DEFINE_EVENT(enter_open,
 	
 	 TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -98,7 +98,7 @@ DEFINE_EVENT(sample_raw_enter_open,
 	)
 );
 
-DEFINE_EVENT(sample_raw_sys_enter,
+DEFINE_EVENT(sys_enter,
 	
          TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -109,7 +109,7 @@ DEFINE_EVENT(sample_raw_sys_enter,
 	
 );
 
-DEFINE_EVENT(sample_raw_enter_read,
+DEFINE_EVENT(enter_read,
 	
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -121,7 +121,7 @@ DEFINE_EVENT(sample_raw_enter_read,
 	)
 );
 
-DEFINE_EVENT(sample_raw_exit_read,
+DEFINE_EVENT(exit_read,
 	
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -132,7 +132,7 @@ DEFINE_EVENT(sample_raw_exit_read,
 
 );
 
-DEFINE_EVENT(sample_raw_enter_write,
+DEFINE_EVENT(enter_write,
 
         TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -145,7 +145,7 @@ DEFINE_EVENT(sample_raw_enter_write,
 
 );
 
-DEFINE_EVENT(sample_raw_enter_lseek,
+DEFINE_EVENT(enter_lseek,
 
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -158,7 +158,7 @@ DEFINE_EVENT(sample_raw_enter_lseek,
 
 );
 
-DEFINE_EVENT(sample_raw_enter_mmap,
+DEFINE_EVENT(enter_mmap,
 	
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -174,7 +174,7 @@ DEFINE_EVENT(sample_raw_enter_mmap,
 
 );
 
-DEFINE_EVENT(sample_raw_sys_exit_brk,
+DEFINE_EVENT(sys_exit_brk,
 
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -184,7 +184,7 @@ DEFINE_EVENT(sample_raw_sys_exit_brk,
 	)
 );
 
-DEFINE_EVENT(sample_raw_kmalloc,
+DEFINE_EVENT(kmalloc,
 
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -198,7 +198,7 @@ DEFINE_EVENT(sample_raw_kmalloc,
 	
 );
 
-DEFINE_EVENT(sample_raw_kmem_cache,
+DEFINE_EVENT(kmem_cache,
 
         TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -212,7 +212,7 @@ DEFINE_EVENT(sample_raw_kmem_cache,
 );
 
 
-DEFINE_EVENT(sample_raw_page_fault,
+DEFINE_EVENT(page_fault,
 
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -222,7 +222,7 @@ DEFINE_EVENT(sample_raw_page_fault,
 
 );
 
-DEFINE_EVENT(sample_raw_page_alloc,
+DEFINE_EVENT(page_alloc,
 	
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -234,7 +234,7 @@ DEFINE_EVENT(sample_raw_page_alloc,
 	)
 );
 
-DEFINE_EVENT(sample_raw_page_alloc_zone,
+DEFINE_EVENT(page_alloc_zone,
 	
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -246,7 +246,7 @@ DEFINE_EVENT(sample_raw_page_alloc_zone,
 
 );
 
-DEFINE_EVENT(sample_raw_page_free,
+DEFINE_EVENT(page_free,
 	
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -257,7 +257,7 @@ DEFINE_EVENT(sample_raw_page_free,
 	
 );
 
-DEFINE_EVENT(sample_raw_page_free_batched,
+DEFINE_EVENT(page_free_batched,
 	
 	TP_STRUCT(
 		TP_STRUCT_COMMON
@@ -268,7 +268,7 @@ DEFINE_EVENT(sample_raw_page_free_batched,
 
 );
 
-DEFINE_EVENT(sample_raw_block_issue,
+DEFINE_EVENT(block_issue,
 
 	TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -284,7 +284,7 @@ DEFINE_EVENT(sample_raw_block_issue,
 
 );
 
-DEFINE_EVENT(sample_raw_block_insert,
+DEFINE_EVENT(block_insert,
 
         TP_STRUCT(
                 TP_STRUCT_COMMON
@@ -298,6 +298,81 @@ DEFINE_EVENT(sample_raw_block_insert,
                 __array( char            , cmd          , 4    )
         )
 
+);
+
+DEFINE_EVENT(net_dev_queue,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+	
+		__field( long long	  , buff	       )
+		__field( int		  , len		       )
+		__array( char		  , name	, 4    )
+	)
+);
+
+DEFINE_EVENT(net_dev_xmit,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__field( long long        , buff               )
+                __field( int              , len                )
+		__field( int              , rc                 )
+                __array( char             , name        , 4    )
+	)
+);
+
+DEFINE_EVENT(netif_receive_skb,
+	
+	TP_STRUCT(
+                TP_STRUCT_COMMON
+
+                __field( long long        , buff               )
+                __field( int              , len                )
+                __array( char             , name        , 4    )
+        )
+);
+
+DEFINE_EVENT(netif_rx,
+	
+	TP_STRUCT(
+                TP_STRUCT_COMMON
+
+                __field( long long        , buff               )
+                __field( int              , len                )
+                __array( char             , name        , 4    )
+        )
+);
+
+DEFINE_EVENT(sys_enter_recvfrom,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+		
+		__field( int		  , nr		       )
+		__field( long long	  , fd		       )
+		__array( char		  , ubuf	, 8    )
+		__field( long long	  , size	       )
+		__field( long long 	  , flags	       )
+		__array( char		  , addr	, 8    )
+		__array( char		  , addr_len	, 8    )
+	)
+);
+
+DEFINE_EVENT(sys_enter_sendto,
+
+        TP_STRUCT(
+                TP_STRUCT_COMMON
+
+                __field( int              , nr                 )
+                __field( long long        , fd                 )
+                __array( char             , ubuf        , 8    )
+                __field( long long        , len                )
+                __field( long long        , flags              )
+                __array( char             , addr        , 8    )
+                __array( char             , addr_len    , 8    )
+        )
 );
 
 #endif

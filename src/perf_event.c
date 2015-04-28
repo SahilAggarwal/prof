@@ -28,7 +28,8 @@ perf_event__open(struct event_open *e_open)
 					  PERF_SAMPLE_CPU	|
 					  PERF_SAMPLE_TID  	;
 	e_open->attr.__reserved_1	= 0;
-	e_open->attr.read_format	= 0;
+	e_open->attr.read_format	= PERF_FORMAT_TOTAL_TIME_ENABLED |
+					  PERF_FORMAT_TOTAL_TIME_RUNNING ;
 
 	fd = perf_event_open(&e_open->attr,e_open->pid,e_open->cpu	\
 				,e_open->group_id,e_open->flags);

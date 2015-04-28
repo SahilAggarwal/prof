@@ -12,7 +12,7 @@ void usage()
                                 -f                      Trace only FileSystem event\n\
                                 -m                      Trace only Memory events\n\
                                 -b                      Trace only Block events\n\
-                                -t                      Trace only Network events\n\
+                                -n                      Trace only Network events\n\
                                 -a <arg>                Pass argument to the exec\n\
                                                                                     \n\
                                 eg:  app-prof -ce test  Trace the CPU events of exec \n\
