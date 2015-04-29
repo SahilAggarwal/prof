@@ -160,6 +160,20 @@ DEFINE_PRINT_FUNC(page_free_batched,
         )
 );
 
+DEFINE_PRINT_FUNC(do_swap_page,
+
+	TP_PRINT(" SWAP_IN Ret:%d\n",
+		 data->ret
+	)
+);
+
+DEFINE_PRINT_FUNC(add_to_swap,
+
+        TP_PRINT(" SWAP_OUT Ret:%d\n",
+                 data->ret
+        )
+);
+
 DEFINE_PRINT_FUNC(block_issue,
 
         TP_PRINT(" BLOCK_ISSUE Dev:%d,%d Nr_sectors:%d Rwbs:%s\n",
@@ -308,6 +322,14 @@ func get_output_function(char *event, char **event_title) {
 	else if(strstr(event,"block_rq_insert")) {
 		*event_title = "Block Insert";
 		return block_insert_entry;
+	}
+	else if(strstr(event,"do_swap_page")) {
+		*event_title = "Swap In";
+		return do_swap_page_entry;
+	}
+	else if(strstr(event,"add_to_swap")) {
+		*event_title = "Swap Out";
+		return add_to_swap_entry;
 	}
 	else if(strstr(event,"net_dev_queue")) {
 		*event_title = "Skb Queue";

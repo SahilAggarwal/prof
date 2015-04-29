@@ -35,15 +35,21 @@ Kmem_cache_alloc       : These events are similar in usage to the kmalloc-
                          usually be used to extrapolate that information
 
 mm_page_fault_handle   : The return value of this event can be compared to 
-			 check if fault was major/minor
+			 check if fault was major/minor(Not availabe in kernel,
+			 added later.) If this event is skipped you need to
+			 add this event in include/trace/events/kmem.h and 
+			 add function 'trace_mm_page_fault_handle(ret)' in
+			 function handle_mm_fault()(mm/memory.c). Recompile
+			 the kernel, now this event will be visible under
+			 kmem.
 
 mm_page_alloc	       : mm_page_alloc is a simple indicator of page
                          allocator activity. Pages may be allocated
-                         from the per-CPU alloca tor (high performance)
+                         from the per-CPU allocator (high performance)
                          or the buddy allocator
 
 mm_page_alloc_zone_   : If pages are allocated directly from the buddy 
-			allocator, the mm_page_alloc_zone_locked event is 
+locked			allocator, the mm_page_alloc_zone_locked event is 
 			triggered. This event is important as high amounts 
 			of activity imply high activity on the zone->lock. 
 			Taking this lock impairs performance by disabling 
@@ -70,6 +76,20 @@ mm_page_alloc_extfrag : External fragmentation affects whether a high-order
 			needs to be able to resize the pool over the lifetime 
 			of the system, this value is important
 
+do_swap_page	      : It is called when page fault happens and the fields are
+			non zero in PTE and contain address in swap area.
+			(Indicate presence of page in swap). Returns 1 if page 
+			found in swap cache(MINOR), 2 if not found in 
+			cache(MAJOR), -1 if error.(Not present in kernel,
+			added later. include/trace/events/kmem.h and 
+			mm/memory.c)
+
+add_to_swap	      : Called when pages are being reclaimed under memory
+			pressure, it allocates new page slot in swap area.
+			Returns 1 on success and 0 on failure.( Not present
+			in kernel, added later)
+			include/trace/events/kmem.h and mm/swap_state.c
+
 
 */
 
@@ -82,6 +102,8 @@ mm_page_alloc_extfrag : External fragmentation affects whether a high-order
 			"kmem/mm_page_alloc_zone_locked/"       ,	\
 			"kmem/mm_page_free/"			,	\
 			"kmem/mm_page_free_batched/"            ,	\
+			"kmem/do_swap_page/"			,	\
+			"kmem/add_to_swap/"			,
 //			"kmem/mm_page_alloc_extfrag/"           ,
 
 #define BLK_EVENTS 	"block/block_rq_issue/"                 ,	\

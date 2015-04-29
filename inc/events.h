@@ -268,6 +268,24 @@ DEFINE_EVENT(page_free_batched,
 
 );
 
+DEFINE_EVENT(do_swap_page,
+		
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+
+		__field( int		, ret		       )
+	)
+);
+
+DEFINE_EVENT(add_to_swap,
+
+        TP_STRUCT(
+                TP_STRUCT_COMMON
+
+                __field( int            , ret                  )
+        )
+);
+
 DEFINE_EVENT(block_issue,
 
 	TP_STRUCT(
