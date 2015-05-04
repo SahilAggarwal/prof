@@ -72,8 +72,11 @@ static int probe_start_exec(char *exec, char **args)
 		int i;	
 		for(i=0; i < probe->thread_map->nr; i++)
 			pthread_join(probe->thread_map->threads[i].tid,NULL);
-	
+
 		probe_buff__flush(probe->buff);
+	//	int status;
+	//	while(waitpid(-1,&status, 0) != -1);
+
 	}
 	return 0;
 }

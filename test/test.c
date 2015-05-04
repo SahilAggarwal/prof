@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <linux/sched.h>
+
+int func(void *test) {
+	printf("CHild\n");
+}
 
 int main()
 {
@@ -24,19 +29,23 @@ int main()
 			fflush(fp);
 			fsync(fileno(fp));
 			fclose(fp);
-		
+	
+			pthread_t tid;
+			pthread_create(&tid,NULL,func);
+			
 //			sleep(2);
 			fp = fopen(filename,"r");
 			if( fp == NULL ) {
-                                fprintf(stderr,"Unable to open file");
-                                exit(0);
-                        }
+				fprintf(stderr,"Unable to open file");
+				exit(0);
+			}
 			fseek(fp,2,SEEK_CUR);
 			char line[512];
 			fgets(line,sizeof(line),fp);
 			printf("Read: %s\n",line);
 			fclose(fp);	
 			printf("File %d\n",index);
+
 			exit(0);
 		}
 		index++;

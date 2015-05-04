@@ -76,7 +76,7 @@ mm_page_alloc_extfrag : External fragmentation affects whether a high-order
 			needs to be able to resize the pool over the lifetime 
 			of the system, this value is important
 
-do_swap_page	      : It is called when page fault happens and the fields are
+mm_page_swap_in	      : It is called when page fault happens and the fields are
 			non zero in PTE and contain address in swap area.
 			(Indicate presence of page in swap). Returns 1 if page 
 			found in swap cache(MINOR), 2 if not found in 
@@ -84,7 +84,7 @@ do_swap_page	      : It is called when page fault happens and the fields are
 			added later. include/trace/events/kmem.h and 
 			mm/memory.c)
 
-add_to_swap	      : Called when pages are being reclaimed under memory
+mm_page_swap_out      : Called when pages are being reclaimed under memory
 			pressure, it allocates new page slot in swap area.
 			Returns 1 on success and 0 on failure.( Not present
 			in kernel, added later)
@@ -102,8 +102,8 @@ add_to_swap	      : Called when pages are being reclaimed under memory
 			"kmem/mm_page_alloc_zone_locked/"       ,	\
 			"kmem/mm_page_free/"			,	\
 			"kmem/mm_page_free_batched/"            ,	\
-			"kmem/do_swap_page/"			,	\
-			"kmem/add_to_swap/"			,
+			"kmem/mm_page_swap_out/"		,	\
+			"kmem/mm_page_swap_in/"			,
 //			"kmem/mm_page_alloc_extfrag/"           ,
 
 #define BLK_EVENTS 	"block/block_rq_issue/"                 ,	\

@@ -60,6 +60,6 @@ for(; $i<=100; $i++) {
 
 print "Records created successfully\n";
 
-print "Average Time:".$total_time;
+print "Average Time:".$total_time."\n";
 
 $dbh->disconnect;

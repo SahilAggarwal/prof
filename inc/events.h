@@ -216,8 +216,11 @@ DEFINE_EVENT(page_fault,
 
 	TP_STRUCT(
                 TP_STRUCT_COMMON
-			
-		__field( int             , flag                 )
+	
+                __field( long long      , vma                  )
+                __field( long long      , addr                 )
+                __field( int            , flags                )
+                __field( int            , ret                  )
 	)
 
 );
@@ -268,20 +271,24 @@ DEFINE_EVENT(page_free_batched,
 
 );
 
-DEFINE_EVENT(do_swap_page,
+DEFINE_EVENT(page_swap_out,
 		
 	TP_STRUCT(
 		TP_STRUCT_COMMON
 
+		__field( unsigned long	, pfn		       )
 		__field( int		, ret		       )
 	)
 );
 
-DEFINE_EVENT(add_to_swap,
+DEFINE_EVENT(page_swap_in,
 
         TP_STRUCT(
                 TP_STRUCT_COMMON
 
+		__field( long long	, vma		       )
+		__field( long long	, addr		       )
+		__field( int		, flags		       )
                 __field( int            , ret                  )
         )
 );

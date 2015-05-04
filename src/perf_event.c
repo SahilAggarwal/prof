@@ -19,7 +19,7 @@ perf_event__open(struct event_open *e_open)
 {
 	int fd = -1;
 
-	e_open->attr.disabled 		= 1;
+	e_open->attr.disabled 		= 0;
 	e_open->attr.size 		= sizeof(e_open->attr);
 	e_open->attr.sample_period	= 1;
 	e_open->attr.inherit		= 1;

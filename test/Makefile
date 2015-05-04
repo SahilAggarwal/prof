@@ -5,7 +5,7 @@ TARGET	= test
 all: $(BINDIR)/$(TARGET)
 
 $(BINDIR)/$(TARGET): test.c
-	$(CC) test.c -o $@
+	$(CC) test.c -lpthread -o $@
 
 clean:
 	rm *.text

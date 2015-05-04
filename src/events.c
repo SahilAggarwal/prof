@@ -128,7 +128,7 @@ DEFINE_PRINT_FUNC(kmem_cache,
 DEFINE_PRINT_FUNC(page_fault,
 
         TP_PRINT(" PAGE_FAULT Type:%s\n",
-                 data->flag & VM_FAULT_MAJOR ? "MAJOR":"MINOR"
+                 data->ret & VM_FAULT_MAJOR ? "MAJOR":"MINOR"
         )
 );
 
@@ -160,16 +160,17 @@ DEFINE_PRINT_FUNC(page_free_batched,
         )
 );
 
-DEFINE_PRINT_FUNC(do_swap_page,
+DEFINE_PRINT_FUNC(page_swap_in,
 
 	TP_PRINT(" SWAP_IN Ret:%d\n",
 		 data->ret
 	)
 );
 
-DEFINE_PRINT_FUNC(add_to_swap,
+DEFINE_PRINT_FUNC(page_swap_out,
 
-        TP_PRINT(" SWAP_OUT Ret:%d\n",
+        TP_PRINT(" SWAP_OUT Ret:%d Pfn:%lu\n",
+		 data->pfn,
                  data->ret
         )
 );
@@ -323,13 +324,13 @@ func get_output_function(char *event, char **event_title) {
 		*event_title = "Block Insert";
 		return block_insert_entry;
 	}
-	else if(strstr(event,"do_swap_page")) {
+	else if(strstr(event,"page_swap_in")) {
 		*event_title = "Swap In";
-		return do_swap_page_entry;
+		return page_swap_in_entry;
 	}
-	else if(strstr(event,"add_to_swap")) {
+	else if(strstr(event,"page_swap_out")) {
 		*event_title = "Swap Out";
-		return add_to_swap_entry;
+		return page_swap_out_entry;
 	}
 	else if(strstr(event,"net_dev_queue")) {
 		*event_title = "Skb Queue";
