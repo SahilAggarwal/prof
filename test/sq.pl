@@ -45,6 +45,8 @@ my $i = 1;
 
 my $total_time = 0;
 
+print time();
+
 for(; $i<=100; $i++) {
 	my $age = $i + 10;
 	my $salary = $i*100;

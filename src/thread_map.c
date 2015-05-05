@@ -7,7 +7,7 @@
 #include "mmap_page.h"
 #include "shared.h"
 
-extern struct wakeup wakeup;
+extern struct wakeup wakeup; // From src/main.c
 
 struct thread_map *
 thread_map__init(struct cpu_map *cpu_map,struct probe_buff *buff,pid_t pid)
