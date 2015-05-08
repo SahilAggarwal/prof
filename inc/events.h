@@ -1,10 +1,12 @@
 #ifndef _H_EVENTS
 #define _H_EVENTS
 
+#include <asm/types.h>
+
 #define VM_FAULT_MAJOR  0x0004
 
-#define __field(type, item)		type item;
-#define __array(type, item, len)	type item[len];
+#define __field(type, item)		 type item;
+#define __array(type, item, len)	 type item[len];
 
 #define TP_STRUCT(args...) 		args
 #define TP_PRINT(args...)		args
@@ -24,10 +26,14 @@
 
 #define DEFINE_PRINT_FUNC(name,p_args)				\
 	void name##_entry(void **arg, char *str) {		\
-		struct name *data = (struct name *)*arg;        \
+		struct name *data = (struct name *)*arg; 	\
                 sprintf(str,p_args);                            \
                 *arg += sizeof(struct name);                    \
 	}
+
+#define get_str(field) (char *)get_dynamic_array(field)
+#define get_dynamic_array(field)      \
+                ((void *)data + (data->arg & 0xffff))
 	
 typedef void (*func)(void **,char *);
 
@@ -95,6 +101,16 @@ DEFINE_EVENT(enter_open,
 		__array( char            , filename   , 8     )
 		__field( long long       , flags	      )
 		__field( long long       , mode		      )	
+	)
+);
+
+DEFINE_EVENT(getname,
+
+	TP_STRUCT(
+		TP_STRUCT_COMMON
+	
+		__field( long long		, ret_ip		)
+		__field( __u32			, arg 			)
 	)
 );
 

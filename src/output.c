@@ -33,6 +33,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 				sample_tid_entry(&sample,		\
 						 str + 0		);
 
+
 			if(attr.sample_type & PERF_SAMPLE_TIME)
 				sample_time_entry(&sample, 		\
 						  str + strlen(str)	);
@@ -44,8 +45,7 @@ __u64 write_output(void *buf, __u64 size, void *out_buff)
 			if(attr.sample_type & PERF_SAMPLE_RAW) {
 				struct perf_record_sample_raw *tmp = sample;
 				void *raw = tmp->data;
-
-				out->print(&raw, str + strlen(str)   );
+				out->print(&raw, str + strlen(str)	);
 					
 				sample += sizeof(*raw);
 			}

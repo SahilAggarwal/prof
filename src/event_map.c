@@ -9,9 +9,10 @@
 #include "events.h"
 
 #define SCHED_EVENTS	"sched/sched_switch/"                   ,	\
-                        "task/task_newtask/"                    ,
+                        "task/task_newtask/"                    ,	\
+			"raw_syscalls/sys_enter/"               ,       \
 
-#define FS_EVENTS	"raw_syscalls/sys_enter/"               ,	\
+#define FS_EVENTS	"probe/getname/"			,	\
                         "syscalls/sys_enter_open/"              ,	\
                         "syscalls/sys_enter_read/"              ,	\
                         "syscalls/sys_exit_read/"               ,	\

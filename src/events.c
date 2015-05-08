@@ -1,4 +1,4 @@
-#include <stdlib.h>
+ #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -49,6 +49,13 @@ DEFINE_PRINT_FUNC(enter_open,
 	TP_PRINT(" ENTER_OPEN Mode:%d\n",
                  data->mode
         )
+);
+
+DEFINE_PRINT_FUNC(getname,
+
+	TP_PRINT(" Filename: %s\n",
+		get_str(arg)
+	)
 );
 
 DEFINE_PRINT_FUNC(sys_enter,
@@ -213,7 +220,7 @@ DEFINE_PRINT_FUNC(net_dev_xmit,
 );
 
 DEFINE_PRINT_FUNC(netif_receive_skb,
-	
+
 	TP_PRINT(" DEV_RECV Skb: %p Len: %d\n",
 		 data->buff,
 		 data->len
@@ -221,7 +228,7 @@ DEFINE_PRINT_FUNC(netif_receive_skb,
 );
 
 DEFINE_PRINT_FUNC(netif_rx,
-	
+
 	TP_PRINT(" DEV_RX Skb: %p Len: %d\n",
                  data->buff,
                  data->len
@@ -355,5 +362,9 @@ func get_output_function(char *event, char **event_title) {
 	else if(strstr(event,"sys_enter_sendto")) {
 		*event_title = "Sendto";
 		return sys_enter_sendto_entry;
+	}
+	else if(strstr(event,"getname")) {
+		*event_title = "Getname";
+		return getname_entry;
 	}
 }
