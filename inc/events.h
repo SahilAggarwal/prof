@@ -33,7 +33,7 @@
 
 #define get_str(field) (char *)get_dynamic_array(field)
 #define get_dynamic_array(field)      \
-                ((void *)data + (data->arg & 0xffff))
+                ((void *)data + (data->field & 0xffff))
 	
 typedef void (*func)(void **,char *);
 
@@ -320,7 +320,7 @@ DEFINE_EVENT(block_issue,
                 __field( int             , bytes               )
 		__array( char            , rwbs         , 8    )
 		__array( char            , comm         , 16   )
-      		__array( char		 , cmd		, 4    )
+      		__field( __u32		 , cmd		       )
 	)
 
 );
@@ -336,7 +336,7 @@ DEFINE_EVENT(block_insert,
                 __field( int             , bytes               )
                 __array( char            , rwbs         , 8    )
                 __array( char            , comm         , 16   )
-                __array( char            , cmd          , 4    )
+                __field( __u32           , cmd                 )
         )
 
 );

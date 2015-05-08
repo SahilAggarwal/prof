@@ -1,6 +1,7 @@
  #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "syscallent.h"
 
 #include "events.h"
 
@@ -60,8 +61,9 @@ DEFINE_PRINT_FUNC(getname,
 
 DEFINE_PRINT_FUNC(sys_enter,
 
-	TP_PRINT(" SYS_ENTER Id:%d\n",
-                 data->id
+	TP_PRINT(" SYS_ENTER Id:%d -> %s\n",
+                 data->id,
+		 syscalls[data->id] 
         )
 
 );
@@ -194,11 +196,12 @@ DEFINE_PRINT_FUNC(block_issue,
 
 DEFINE_PRINT_FUNC(block_insert,
 
-        TP_PRINT(" BLOCK_INSERT Dev:%d,%d Nr_sectors:%d Rwbs:%s\n",
+        TP_PRINT(" BLOCK_INSERT Dev:%d,%d Nr_sectors:%d Rwbs:%s Comm: %s\n",
                  (unsigned int) data->dev >> 20,
                  (unsigned int) (data->dev & ( 1U << 20 ) - 1),
                  data->nr_sector,
-                 data->rwbs
+                 data->rwbs,
+		 data->comm
         )
 );
 
